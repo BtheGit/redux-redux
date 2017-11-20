@@ -1,4 +1,4 @@
-# A Redux redux:
+# A Redux redux 
 #### Reducers, Actions, Action Creators, Stores, Providers, Thunks, Sagas...
 
 You've picked up React, even started to get comfortable with it. You've been hearing about Redux for a while. Everything you read tells you you'll know when you need it, don't rush it. But you know it goes with React like ice cream with apple pie and you know if you're going to do this professionally you can't ignore the most popular companion to React. So you figure it's time to give it a try. Even if your personal project is pretty simple, you're going to use the same tools the pros use. And then you hit the inevitable wall of jargon, split files, and boilerplate. 
@@ -9,7 +9,9 @@ The simple answer is no. It doesn't. Redux is an amazing tool in large part beca
 
 I should mention that we aren't really going to talk about React in this course. Redux is used with it most commonly, but Redux is actually a vanilla Javascript library and can be used anywhere. 'react-redux' is a library that is built to connect React components with the Redux library. after we have a strong command of Redux it will be a lot easier to see what is happening in react-redux, but we won't build that library from scratch as well, just cover the essentials to feel like we know what is going on underneath the hood. 
 
-## Chapter 0: We begin at the beginning
+## Part 1: Creating a Redux store
+
+### Chapter 0: We begin at the beginning
 
 We're going to work with the simplest of functions and only a few pieces of state throughout. I'm of the strong opinion that for novices best practices are the worst ways to learn something. Hopefully the concepts you learn today will help you grok the best practices in the official docs as we slowly build towards them iteratively rather than piece them together directly.
 
@@ -48,7 +50,7 @@ addChild('Bozo')
 showChildren() // 5
 ```
 
-## Chapter 1: Gathering up state into one place
+### Chapter 1: Gathering up state into one place
 
 Not everything we are going to do as we build our Duplo version of Redux is going to sem essential. But hopefully it always seems simple. For the next step, we are going to collect all of our state into an object. Like good housekeeping, we're going to hide all of those global variables so they don't create a mess (global just means anything can access them - it doesn't necessarily seem like such a bad idea, it's certainly more convenient. But what happens when more than one thing has the same name? Either your program starts doing weird stuff or telling bad puns. Or both):
 
@@ -71,7 +73,7 @@ function addChild(newChild) {
 }
 ```
 
-## Chapter 2: Let's start making an interface
+### Chapter 2: Let's start making an interface
 
 Now that we have our state (variables) in one place, we can get even fancier. Instead of directly changing (setting) our state, let's just tell our state to change itself. Why? Well, if for no other reason than to not worry about how it happens. Our functions right now are simple, but if we made it a bit more complicated, if we wanted to add in extra checks to make sure we couldn't do things like this:
 
@@ -85,7 +87,7 @@ For example, let's say we want to make sure a newMood is a string. We would do s
 
 ```javascript
 function changeMood(newMood) {
-  if(typeof newMood === 'string) {
+  if(typeof newMood === 'string') {
     ourState.mood = newMood
   }
 }
@@ -99,7 +101,7 @@ let ourState = {
   mood: 'Happy',
   children: ['Bobby', 'Billy', 'Betty', 'Bobo'],
   changeMood: function(newMood) { 
-    if(typeof newMood === 'string) {
+    if(typeof newMood === 'string') {
       ourState.mood = newMood
     }
   },
@@ -114,7 +116,7 @@ So now, to change our state, we have to do things a bit differently:
 Instead of directly changing the state:
 
 ```javascript
-if(typeof newMood === 'string) {
+if(typeof newMood === 'string') {
   ourState.mood = newMood
 }
 ```
@@ -125,15 +127,17 @@ We tell the state to change itself (but we don't worry about how):
 ourState.changeMood('Sad')
 ```
 
-## Chapter 3: The plot thickens
+### Chapter 3: The plot thickens
 
-If it feels like we're covering a lot of basic ground tediously, it's because we are. The idea is that by the end of the process it will seem downright simplistic. For the most part, the how of Redux is simplistic, it's the why that tends to leave beginners a little unsure. Since we won't build anything that takes advantage of some of the coolest aspects of Redux, such as time-travel debugging, we'll take a moment to talk about them. Time-travel debugging for instance sounds cool but it's really only time travel in the way that rewind and fast-forward on a VHS player are time travel. Put away your sports almanac. 
+If it feels like we're covering a lot of basic ground tediously, it's because we are. The idea is that by the end of the process it will seem downright simplistic. For the most part, the how of Redux is simplistic, it's the why and the syntax that tends to leave beginners a little unsure.
 
-We haven't got there yet, but one of the biggest advantages of Redux is being able to see a perfect record of how changes are made to your state. Redux never actually changes anything, it just gets instructions about what to change and then creates new copies with those changes. At the end we have a history of those instructions just like you might have in your web browser, so we can browse through all the state changes in the order they occured when something goes wrong (time-travel debugging). 
+On a side-note, since we won't build anything that takes advantage of some of the coolest benefits of Redux, such as time-travel debugging, we should at least take a brief moment to mention about them. Time-travel debugging for instance sounds really crazy but it's really only time travel in the way that rewind and fast-forward on a VHS player are time travel. Sadly, you can put away your sports almanac now.
 
-Constantly creating new copies of the state and pretending they are the same thing also means we can avoid another problem, race conditions. This is race in the sense of the tortoise and the hare, not in the sense of identity. The basic gist is that when you have two or more things going on in your program that will eventually have an effect on the same thing (such as a piece of state/variable) it can create unpredictability. In other words, when the order of things happening matters but you can't guarantee what order they will happen in you have race conditions. Sometimes it's not important and sometimes one instruction is 'jump out a plane' and the other is 'put on a parachute' and the order really, really matters!
+One of the biggest advantages of Redux is being able to see a perfect record of how changes are made to your state. Redux never actually changes anything directly, it gets instructions about what to change, and then creates new versions of our state based on those instructions. This gives us the potential to save a history of those instructions and versions of the state just like a web browser might when you are wasting too much time on Reddit. So we could browse through all the state changes in the order they occured when something goes wrong (time-travel debugging). 
 
-When you have two actions in redux they never actually change the same thing, one action will create a new, altered copy of the state and the second action will create a copy of that state. It doesn't solve the problems with the order of actions, but it means two things aren't trying to change the same thing at the exact same time. And it means we can actually go back and see what the order is if we weren't sure. It's not as exciting as a real Delorean but it definitely can be helpful.
+Constantly creating new copies of the state and pretending they are the same thing also helps get us closer to avoiding another problem, race conditions. This is race in the sense of the tortoise and the hare, not in the sense of identity. The basic gist is that when you have two or more things going on in your program that will eventually have an effect on the same thing (such as a piece of state/variable) it can create unpredictability. In other words, when the order of things happening matters but you can't guarantee what order they will happen in you have race conditions. Sometimes it's not important and sometimes one instruction is 'jump out a plane' and the other is 'put on a parachute' and the order really, really matters!
+
+When you have two actions in redux they never actually change the same thing, one action will create a new, altered copy of the state and the second action will create a copy of that state. It doesn't solve the problems with the order of actions, but it means two things aren't trying to change the same thing at the exact same time. And it means we can actually go back and see what the order is if we weren't sure (time travel debugging again). It's not as exciting as a real Delorean but it definitely can be helpful.
 
 At this point in our program we have a state object that is a random assortment of variables and functions. It might make sense to bundle all that state together into it's own object just like we did before. 
 
@@ -144,7 +148,7 @@ let ourState = {
     children: ['Bobby', 'Billy', 'Betty', 'Bobo']
   },
   changeMood: function(newMood) { 
-    if(typeof newMood === 'string) {
+    if(typeof newMood === 'string') {
       this.mood = newMood
     }
   },
@@ -154,7 +158,7 @@ let ourState = {
 }
 ```
 
-Of course now it's a bit odd to call the outer object that holds everything 'state' and the inner object that just hold state. So let's rename 'ourState' to 'ourStore' to reflect the fact that it holds stuff but also lets us add/remove/change stuff. Just like a real store. And we need to change our inner functions to reflect the changes. Since we are managing all that internally we only have to change it in one place!
+Of course now it's a bit odd to call the outer object that holds everything 'state' and the inner object that just holds the state the same thing. So let's rename 'ourState' to 'ourStore' to reflect the fact that it holds stuff but also lets us add/remove/change stuff. Just like a real store. And we need to change our inner functions to reflect the changes.
 
 ```javascript
 let ourStore = {
@@ -163,7 +167,7 @@ let ourStore = {
     children: ['Bobby', 'Billy', 'Betty', 'Bobo']
   },
   changeMood: function(newMood) { 
-    if(typeof newMood === 'string) {
+    if(typeof newMood === 'string') {
       this.state.mood = newMood
     }
   },
@@ -179,9 +183,9 @@ let ourStore = {
 }
 ```
 
-## Chapter 4: I see you but I can't reach you
+### Chapter 4: I see you but I can't reach you
 
-One of the thing we are doing right not is console logging our state when we want to see it. That doesn't really make sense since we can't actually use it in our program. Instead, we should be returning it whenever its requested so that whoever requested it can use it as they see fit. In fact, instead of having to make separate functions to return individual variables, let's just return the whole state object and let whoever called it have access to whatever information they want. And since we are effectively getting the state for whoever requested it and returning it to them (a getter) we can call this getState():
+One of the thing we are doing right now is console logging our state when we want to see it. That doesn't really make sense since we can't actually use it in our program. Instead, we should be returning it whenever its requested so that whoever requested it can use it as they see fit. In fact, instead of having to make separate functions to return individual variables, let's just return the whole state object and let whoever called it have access to whatever information they want. And since we are effectively getting the state for whoever requested it and returning it to them (a getter) we can call this getState():
 
 
 ```javascript
@@ -197,7 +201,7 @@ let ourStore = {
 
 Now, anytime we want to see what's happening we just ask for the current state and can read from or play with it as we see fit.
 
-## Chapter 5: Setters aren't dogs, but they can breed like rabbits
+### Chapter 5: Setters aren't dogs, but they can breed like rabbits
 
 You've probably heard a lot of chatter about something called DRY code. Man, do programmers like their acronyms and, at least in the case of WYSIWYG, have a pretty limited sense of irony. It just means try not to do the same thing over and over again in different places. If you find you are repeating yourself, take that thing you are repeating, separate it and then just reference it over and over again instead of rewriting it each time you need it.
 
@@ -369,7 +373,7 @@ let ourStore = {
 }
 ```
 
-## Chapter 6: A new complication makes things easier
+### Chapter 6: A new complication makes things easier
 
 We talked earlier about race conditions. When we can't predict the order of actions. That means we also can't predict the state that the actions act on. So there are a few things that we should consider doing to make changeState() more predictable. 
 
@@ -472,7 +476,7 @@ getState: function() {
 }
 ```
 
-## Chapter 7: Closures. Oh dear god, closures.
+### Chapter 7: Closures. Oh dear god, closures.
 
 If you don't know what a closure is, then you've probably heard about it in hushed tones and fearful whispers. But, like many things in programming, the jargon makes it sound a lot more complicated than it is. Basically, it just means that if a function has access to some outside data when it is created in one place, it will continue to have access to that data, even if you call the function from other places or pass it around. Let's make a very simple example. We're going to use a container function that will be our pretend version of a program, module, library, etc. This container function will hold a single variable and another function inside. Our container will have one purpose, to return the function it contains. 
 
@@ -655,7 +659,7 @@ function createStore() {
 }
 ```
 
-## Chapter 8: Teenage Mutant Ninja Functions!
+### Chapter 8: Teenage Mutant Ninja Functions!
 
 Way back in chapter 3 we spent a few minutes talking about some of the features of Redux, like copying state rather than changing it directly and time-travel debugging, and then we completely ignored them until now. 
 
@@ -745,7 +749,7 @@ function createStore() {
 }
 ```
 
-## Chapter 9: If it looks like a duck but barks, it's a dog in a disguise
+### Chapter 9: If it looks like a duck but barks, it's a dog in a disguise
 
 Now, if you try and use the store we made above, it works. But, and this is a big but, it doesn't actually work the way we want it to.
 
@@ -1023,7 +1027,7 @@ function createStore() {
 }
 ```
 
-## Chapter 10: Reduction is the name of the game
+### Chapter 10: Reduction is the name of the game
 
 Now that we are using Object.assign, we can talk about what it does with a cool new word, 'reducing'. Reducing just means taking a lot of things and mashing them together into one. Isn't that just adding (or concatenating in programming terminology)? Yes, yes it is, thank you for asking. The difference is, when we reduce we also change the stuff we're mashing together so that it fits better. This usually means overriding repeated elements, which is how we are using it to update our state copies. So really our changeState is just a giant reduce function. It takes one object (state) and a second object (which we create from the information in our action message/object) and mashes them together to create a new, single object. So in honor of understanding what changeState really does, maybe we should give it a more appropriate name? After all, it isn't changing the state anymore so much as taking old state, new action and reducing that into new state. Something like this:
 
@@ -1137,7 +1141,7 @@ A small note. Switch statement are a bit different in that you can activate mult
 
 Keep in mind, the above syntax isn't necessary. It's just what people usually use with Redux (myself included) and I wanted you to get comfortable with seeing it. I personally find it makes scanning a reducer a bit easier on the brain if nothing else.
 
-## Chapter 11: Generics aren't just cheaper, they're better
+### Chapter 11: Generics aren't just cheaper, they're better
 
 If you look at our new createStore function, you might notice something. Depending on what kind of program we write, our reducer might have a different decision tree and that would be because our state had a different structure. But other parts, in this case our dispatch method, won't change based on different kinds of state. That means we could reuse our createStore function in other programs (or in other parts of the same program) to create different stores that held different states with different reducers, as long as we don't hard code the parts that might change into the parts that won't.
 
@@ -1220,7 +1224,7 @@ const store = createStore(reducer, initialState)
 Passing in arguments definitely makes it more reusable. Do you notice a possible problem though? Right now we are passing in the reducer and the initial state separately. That makes it possible for us to use whatever reducer and whatever state we want. Except, as you may have noticed, the reducer decision tree is completely dependant on what's inside the state object. That means we need to use our reducer only with the state it was designed for. The two pieces are inextricably linked and we should treat them as such. That means where one goes the other follows. So what's the best way to accomplish that?
 
 
-## Chapter 12: Default is not a place where earthquakes happen
+### Chapter 12: Default is not a place where earthquakes happen
 
 Right now a reducer takes in state and returns new state. We've already seen in our store above that we will keep storing that state in a currentState variable. Whenever dispatch is used, it grabs that currentState and throws it into the reducer and then takes the output and puts it back in currentState. But the very first time we run createStore nothing is inside the currentState. If we tried to use it, it would be 'undefined'. If we ran dispatch with it (AND an action -- remember, dispatch exits before completeing if it doesn't get an action with a 'type' key), the reducer would take the state we passed (which in this case is 'undefined') and skip to it's default case (unless we gave it a predefined action) which just returns that state to us unchanged (which would still be 'undefined'). How do we get our initialState into this process and still keep it linked to the reducer that acts on it?
 
@@ -1381,7 +1385,9 @@ const store = createStore(reducer)
 And there we have it, a fully functioning store that accepts different reducers and state objects!
 
 
-## Chapter 13: Lights, Camera, ACTION!
+## Part 2: Using best practices to manage Actions
+
+### Chapter 13: Lights, Camera, ACTION!
 
 We have, for all intents and purposes, a functioning state management device. Yes, there are some things missing and we'll address some of those later. But first let's look into another aspect of what he have already that we haven't really explored much. Actions. If they don't seem that complicated, it's because they aren't. All an action is is an object with a 'type' key. This object can come from anywhere and have anything other data inside it as well. So what is there left to really say? 
 
@@ -1402,7 +1408,7 @@ Why is it uppercase now? Well, that's in line with a convention in programming t
 We're going to see how sharing action types looks by making a new reducer and new actions to play with, but before we do that, it would be a good idea to review a bit of modern Javascript syntax we'll want to start using.
 
 
-## Chapter 14: Hoist the main sail, ES6 ahoy!
+### Chapter 14: Hoist the main sail, ES6 ahoy!
 
 
 We're going to start using some ES6 (the new, cool Javascript) style functions. If they are new to you it might seem a bit strange at first, especially because we won't use the function keyword anymore. That isn't completely crazy. After all, we already can declare functions as variables if we do them like this:
@@ -1540,7 +1546,7 @@ Now, back to the main action!
 NOTE: If you're curious as to what details about arrow functions we skipped, they mostly have to do with the 'this' keyword. It's important to understand in some cases, but it doesn't make a difference to us at the moment. But do keep in mind that arrow functions are not hoisted. I.e. we can't use them until after we declare (create) them.
 
 
-## Chapter 15: Where do actions come from? Storks?
+### Chapter 15: Where do actions come from? Storks?
 
 In order to explore actions a bit more clearly, let's create a new reducer/initialState/actionType to work with.
 
@@ -1585,18 +1591,184 @@ store.dispatch({type: INCREMENT})
 store.getState() // {count: 1}
 ```
 
+Yay! Everything works. But let me ask you a question, what stops someone else from dispatching a different action that our reducer isn't prepared for? Or sending information in an action type that the reducer doesn't know how to use? Nothing really. That's where Actions and Action Creators come in. The idea is that we create a gatekeeper. If a person wants to change the state in the store (ie dispatch an action to the store) than instead of directly creating the action, they use a small function that creates the action for them (an Action Creator). Since the Action Creator is a function that creates the function, if it gets arguments it doesn't like it can just ignore them:
 
+```javascript
+const actionCreator = () => ({
+  type: INCREMENT
+})
+```
+
+So now we have a simple function that creates (and implicitly returns) an action object. If we give that to our dispatch function it will dispatch the action object to the store. So now instead of creating an object directly we just call the function that does it for us:
+
+```javascript
+store.dispatch(actionCreator())
+```
+
+So, if a user tried to add extra information to the action, our action creator will disregard it since it doesn't care about any arguments. The above example sends the exact same action to the store as the following:
+
+```javascript
+store.dispatch(actionCreator('asfsdfjsdjkf', 34535345, ['Hello', 'can', 'anybody', 'hear', 'me', '?']))
+```
+
+This is really helpful when we do want extra arguments. Now we can do all the error and type checking in our action creator instead of in our main program. We can make sure strings are strings, numbers are the right size, arrays aren't objects... For example, we'll use an argument:
+
+```javascript
+// Action Type 
+const ADD_PERSON = 'ADD PERSON'
+
+// Action Creator
+const addPerson = (name, age) => {
+  if(typeof name !== 'string' || typeof age !== 'number') {
+    console.log('Please provide a name and age, a string and number respectively')
+    return
+  }
+
+  if(age < 0 || age > 150) {
+    console.log('Please provide a realistic age. We don\'t believe you')
+    return
+  }
+
+  if(name === 'Brendan Beltz') {
+    console.log('Please provide a name that doesn\'t sound so silly')
+    return
+  }
+
+  return {
+    type: ADD_PERSON,
+    name: name,
+    age: age
+  }
+}
+```
+
+By the way, there is another cool, but occasionally confusing piece of Javascript syntax that we should cover. If you look at the above action object we return from the action creator, you may notice that we are creating keys in the object and giving them values that match variables with the same name as the keys. There is a shortcut (remember, it does the exact same thing, just a shorthand version). If we just pass the name of the variable as the name of the key, without any colons or values, it will automatically create a key with the name of the variable and then give it the value inside the variable. For example:
+
+```javascript
+const name = 'Brendan'
+const age = 35
+
+const objectOne = {
+  name: name,
+  age: age
+}
+
+const objectTwo = {
+  name,
+  age
+}
+
+console.log(objectOne) // {name: 'Brendan', age: 35}
+console.log(objectTwo) // {name: 'Brendan', age: 35}
+```
+
+You can even mix and match in the same object, sometimes giving keys values, and sometimes using shorthand properties. This is fine:
+
+```javascript
+const name = 'Brendan'
+const age = 35
+
+const objectOne = {
+  favoriteColor: 'purple,
+  name,
+  age,
+  mood: 'hungry'
+}
+```
+
+There is a secondary benefit to using action creator functions instead of making our own action objects, it means we can't create new types of actions. Which makes sense of course because actions need to match the reducer cases. So the difference between sending an action object that the reducer can't understand and trying to use an actionCreator that doesn't exist, is that you'll get better error reporting while you are building your program. The former might return state unchanged accidentally, but the latter will crash your program and force you to fix the issue before continuing (this is a good thing!).
+
+So to recap, as a matter of good practice, not because it's essential, we'll share action types between our reducer and actions. Furthermore, we'll use action creator functions to create those actions and prevent anybody from sending their own, non-sanctioned actions to our store. A security guard if you will.
+
+## Section 3: Subscriptions
+
+### Chapter 16: Hello? What's going on in there?
+
+At this point we've done most of the heavy lifting for our tutorial. We've built our own simplified version of Redux, at least as far as changing and viewing state goes. And we've created a very clear set of guidelines for how to send messages to change the state inside of our store. Hopefully by now the core concepts behind Redux feel like second nature to you. We're going to focus now on extending our Redux to make it more useful by adding more public functions to the ones we already have (dispatch, getState). 
+
+We've spent a lot of time thinking about the best way to change (dispatch) state. But what about getting it back? All we can do right now is manually ask for the state with getState. But how do we know when to ask? How do we know when the state has changed? If we call getState right after dispatch, what happens if dispatch takes longer than getState to complete? We won't see the new state at all.
+
+We're going to take advantage of another useful pattern that is used in all kinds of languages and all kinds of programs, not just Redux. The Publisher-Subscriber pattern, Pub-Sub for short. (You may have run across something called the Observer pattern as well. The two aren't conceptually different, the difference lies in how you implement the concept.)
+
+Pub-sub is pretty much what is sounds like (the long version that is, we're not talking about bar sandwiches after all), a way for things to subscribe to something and receive something back when it is published. Kind of like when you set up an automated google search alert on your name. 
+
+Right now, we have a few things that happen when we change the store's state. We have a dispatch function that takes a message and then sends it to the reducer function. The reducer takes the action and gives back to the dispatch function a new version of the store's state. The dispatch function then saves that new state in a variable (currentState) that is available to the rest of the store (like getState). And that's pretty much it. 
+
+Where do subscriptions come into this? Well, if we want other programs using this store to get notified whenever the store's state changes, we need to have a way for them to subscribe (listen) to the store. That means a subscribe function (and unsubscribe, but we will ignore that for the moment). It also means we need to keep a list of all of our subscribers/listeners (there could be more than one place in a big program that would want to receive notifications of store changes). And at some point after the state has been changed we need to go through that list of listeners and notify them of the change (ie send them a copy of the new state). The most obvious location for that would be right after dispatch updates currentState. So why not just stick the notification logic right inside dispatch? Good idea, that's exactly what we'll do! 
+
+However, before we do that, we'll need to figure out where to keep that list. We've already figured out that more than one of our store functions will need access to it: subscribe needs to add things to it, unsubscribe needs to remove things from it, and dispatch will need to read it to know where to send updates. So that means we should put it somewhere everyone can see it. How about right next to our other store variables? Good idea again, you're really on fire today! As a last note, since this is a list, we'll just use a simple array to store our listeners.
+
+Here's our new store with a few placeholders that we'll start filling in:
+
+```javascript
+function createStore(reducer, initialState) {
+  if(typeof reducer !== 'function') {
+    console.log('We expected the reducer to be a function. Try again!')
+    return
+  }
+
+  const initialAction = {
+    type: '@@redux@@reserved/INIT' + Math.random().toString().substring(7).split('').join('.')
+  }
+  let currentState = initialState
+  let currentReducer = reducer
+  let currentListeners = []
+  let isDispatching = false
+
+  function getState() { 
+    return currentState 
+  }
+
+  function dispatch(action) {
+    if(!action) {
+      console.log('You forgot to dispatch an action!')
+      return
+    }
+
+    if(typeof action !== 'object') {
+      console.log('Actions need to be a simple object.')
+      return
+    }
+
+    if(!action.hasOwnProperty('type')) {
+      console.log("Actions need to have a 'type' key." )
+      return
+    }
+
+    if(isDispatching) {
+      console.log('You cannot dispatch an action from inside a reducer!')
+      return
+    }
+
+    isDispatching = true
+    currentState = currentReducer(currentState, action)
+    isDispatching = false
+
+    //TODO: Notify our subscribers of changes (publish new state)
+  }
+
+  function subscribe() {
+    // TODO
+  }
+
+  function unsubscribe() {
+    // TODO
+  }
+
+  dispatch(initialActon)
+
+  return {
+    getState,
+    dispatch
+  }
+}
 
 
 
 
 <!-- Now, we've talked a lot about time travel debugging as one of the reasons Redux is so popular (it's also the reason it was originally created) but we haven't really seen what that looks like. We're not going to build that functionality out, but if you want to think about what the simplest version would entail, you might realize it's pretty simple. Every time we dispatch an action, we get back the new state. So far we are replacing the same variable over and over again which is erasing our history. But what if we stored those copies in an array as well? Then we could go back and forth all day loading different copies into currentState. Unfortunately, that's out of scope for us now. Instead we're going to move on to part two. Actions. -->
 
-<!-- Chapter xx: Hello? What's going on in there?
 
-At this point we've done the heavy lifting for our tutorial. We've built our own simplified version of Redux, at least as far as changing and viewing state goes. Hopefully by now the core concepts behind Redux feel like second nature to you. We're going to focus now on extending our Redux to make it more useful by adding more public functions to the ones we already have (dispatch, getState). 
-
-So let's focus for a minute on a very different pattern that is common to many programs and will help make our Redux more useful. First of all we didn't include a way for outside programs to get automatica updates when the state changes. This is also called subscribing. So, for now, everytime we change state we have to manually call getState to see our changes. The only problem with that is, what happens if it takes longer for us to change the state than it does for us to try and retrieve the state? -->
 
 
 
