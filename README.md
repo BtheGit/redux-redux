@@ -1,21 +1,27 @@
 # A Redux redux 
 #### Reducers, Actions, Action Creators, Stores, Providers, Thunks, Sagas...
 
-You've picked up React, even started to get comfortable with it. You've been hearing about Redux for a while. Everything you read tells you you'll know when you need it, don't rush it. But you know it goes with React like ice cream with apple pie and you know if you're going to do this professionally you can't ignore the most popular companion to React. So you figure it's time to give it a try. Even if your personal project is pretty simple, you're going to use the same tools the pros use. And then you hit the inevitable wall of jargon, split files, and boilerplate. 
+You're still pretty new to Javascript. But now the pressure is on to use a framework, so you've picked up React. You're starting to get the basic gist of it, there's still a lot of magic, especially when it comes to Webpack. You've been hearing about Redux for almost as long as you've been hearing about React. Everything you read tells you you'll know when you need it, don't rush it. But you know the truth is that every job description you see mentions React and Redux in the same breath. So you figure there's no time to waste. Even if your personal project that you're making to learn React is pretty simple, you still want to use the same tools the pros use. 
+
+And then you hit the inevitable wall of jargon, split files, and boilerplate. 
 
 Does it really take 5 files to deal with one variable?? 
 
-The simple answer is no. It doesn't. Redux is an amazing tool in large part because it is so simple. That simplicity also allows a great deal of flexibility in how it's structured and used. That flexibility means a lot of time has gone into finding the best way among many of doing things (best practices). And those best practices means sometimes it can be very hard as a beginner to see the forest for the trees. Our goal today is to build a very simple version of redux in the most ELI5 way we can, one step at a time. Along the way we'll explore a lot of important Javascript concepts that might similarly feel a bit confusing as a beginner and, similarly, aren't really all that difficult at all. By the end, we will hopefully have an understanding of why implementing Redux in small scale projects isn't entirely a waste of time and effort and why it might even be helpful. 
+The simple answer is no. It doesn't. Redux is an amazing tool in large part because it is so simple. That simplicity also allows a great deal of flexibility in how it's structured and used. That flexibility means a lot of time has gone into finding the best way among many of doing things (best practices). And those best practices means sometimes it can be very hard as a beginner to see the forest for the trees. Our goal today is to build a very simple version of redux in the most ELI5 way we can, one step at a time. 
 
-I should mention that we aren't really going to talk about React in this course. Redux is used with it most commonly, but Redux is actually a vanilla Javascript library and can be used anywhere. 'react-redux' is a library that is built to connect React components with the Redux library. after we have a strong command of Redux it will be a lot easier to see what is happening in react-redux, but we won't build that library from scratch as well, just cover the essentials to feel like we know what is going on underneath the hood. 
+Along the way we'll explore a lot of important Javascript concepts that might similarly feel a bit confusing as a beginner and, similarly, aren't really all that difficult at all. Large sections of this guide will look at these general concepts and talk with the expectation that even if you've learnt them, they may still feel a little unclear. 
+
+By the end, we will hopefully have a clearer grasp of some of the most useful Javascript rulesand patterns and, at the same time, a better understanding of Redux (and why implementing it in small scale projects isn't entirely a waste of time and effort).
+
+I should mention that we aren't really going to talk about React in this course. Redux is used with it most commonly, but Redux is really just a vanilla Javascript library and can be used anywhere. 'react-redux' is a library that is built to connect React components with the Redux library. after we have a strong command of Redux it will be a lot easier to see what is happening in react-redux, but we won't build that library from scratch as well, just cover the essentials to feel like we know what is going on underneath the hood. 
 
 ## Part 1: Creating a Redux store
 
 ### Chapter 0: We begin at the beginning
 
-We're going to work with the simplest of functions and only a few pieces of state throughout. I'm of the strong opinion that for novices best practices are the worst ways to learn something. Hopefully the concepts you learn today will help you grok the best practices in the official docs as we slowly build towards them iteratively rather than piece them together directly.
+We're going to start by working with the simplest of functions and only a few pieces of state. I'm of the strong opinion that for novices learning best practices first is counterproductive. Hopefully the concepts you learn today will help you understand why the official Redux sourcecode was written the way it was as we slowly build towards it iteratively. 
 
-We'll start with the simplest program we can muster. A few variables (our program's state) and a few functions that read and change them (our getters and setters respectively):
+We'll start simple and improve as we go. A few variables (our program's state) and a few functions that read and change them (our getters and setters respectively):
 
 ```javascript
 let mood = 'Happy'
@@ -52,7 +58,7 @@ showChildren() // 5
 
 ### Chapter 1: Gathering up state into one place
 
-Not everything we are going to do as we build our Duplo version of Redux is going to sem essential. But hopefully it always seems simple. For the next step, we are going to collect all of our state into an object. Like good housekeeping, we're going to hide all of those global variables so they don't create a mess (global just means anything can access them - it doesn't necessarily seem like such a bad idea, it's certainly more convenient. But what happens when more than one thing has the same name? Either your program starts doing weird stuff or telling bad puns. Or both):
+Not everything we are going to do as we build our simplified version of Redux is going to seem essential. But hopefully it always seems clear. For the next step, we are going to collect all of our state into an object. Like good housekeeping, we're going to hide all of those global variables so they don't create a mess (global just means anything can access them - it doesn't necessarily seem like such a bad idea, it's certainly more convenient. But what happens when more than one thing has the same name? Either your program starts doing weird stuff or telling bad puns. Or both):
 
 ```javascript
 let ourState = {
@@ -772,7 +778,7 @@ The value of 'obj' can't be a simple value, it's a container that has to be able
 Here are three ways to create a new array that contains everything the old array it's copying does:
 
 ```javascript
-let newArray = oldArray.slice(0)
+let newArray = oldArray.slice()
 let newArray = Array.from(oldArray)
 let newArray = [...oldArray] //This is the hip new way. The '...' is called a 'spread operator'.
 ```
@@ -1427,7 +1433,7 @@ function sayHello(name) {
 }
 ```
 
-There is one big difference between the two, something called hoisting. To hoist means to lift up and, in the same sense, when something is hoisted in Javascript it's lifted up to the top of the program. Huh? Typically when you run a program it starts at the top and runs to the bottom, line by line. It has no idea of what is coming until it gets there. But Javascript isn't really just running from start to finish. It scans the whole program before it actually starts running so it cheats and knows what's coming. Confusingly, sometimes it acts like it does and sometimes it pretends it doesn't. This is a pretty important distinction and if it's worth reading further if you still feel confused (the keyword 'var' is famous for being problematic because of hoisting and that's why it's abandoned now in favor of 'let' and 'const' (when you know the variable won't change again)). However, for the sake of our exercise I'll just make a simple distinction. 
+There is one big difference between the two, something called hoisting. To hoist means to lift up and, in the same sense, when something is hoisted in Javascript it's lifted up to the top of the program. Huh? Typically when you run a program it starts at the top and runs to the bottom, line by line. It has no idea of what is coming until it gets there. But Javascript isn't really just running from start to finish. It scans the whole program before it actually starts running so it cheats and knows what's coming. Confusingly, sometimes it acts like it does and sometimes it pretends it doesn't. This is a pretty important distinction and it's worth reading more about it if you still feel confused (the keyword 'var' is famous for being problematic because of hoisting and that's why it's abandoned now in favor of 'let' and 'const' (when you know the variable won't change again)). However, for the sake of our exercise I'll just make a simple distinction. 
 
 When you use the 'function' keyword, that function is immediately available anywhere in the program, even if you put the function at the very bottom. That's hoisting. But if you create a function by giving it to a variable like we did in the first example above, it's only available to the parts of the program that come after it is created. So from now on, the order of declarations is even more important to consider. 
 
@@ -1443,7 +1449,9 @@ const sayHello = () => {
 }
 ```
 
-Not so different, right? Those empty () braces are where any arguments would go. We can't leave them out completely because '= =>' would confuse the hell out of our compiler. There is another syntax quirk to remember: if you have only one argument, you don't need the braces, but if you have more than one, or none, you do. For example, these are all correct:
+Not so different, right? Those empty () braces are where any arguments would go. We can't leave them out completely because '= =>' would confuse the hell out of our compiler. 
+
+There is another syntax quirk to remember as well. If you have only one argument, you don't need the braces, but if you have more than one, or none, you do. For example, these are all correct:
 
 ```javascript
 const sayHello = () => {
@@ -1481,7 +1489,11 @@ There's a second, and much more confusing aspect to arrow functions, something c
 const add = (a, b) => a + b
 ```
 
-Is exactly the same as the version with 'return' above. But what about if you want to return an object? It uses the same curly braces as the area where we'd normally put lines of code to run and confuses the compiler. So we just wrap it in our () braces first and the compiler knows it's like using the one line implicit return and it's actually an object not a block of code (we also do this when we want to implicitly return something that is multiple lines of code as you may see in examples of React functional components). These are the same:
+Is exactly the same as the version with 'return' above. 
+
+But what about if you want to return an object? It uses the same curly braces as the area where we'd normally put lines of code to run and confuses the compiler. So we just wrap it in our () braces first and the compiler knows it's like using the one line implicit return and it's actually an object not a block of code (we also do this when we want to implicitly return something that is multiple lines of code as you may see in examples of React functional components). 
+
+These are the same:
 
 ```javascript
 const makeAction = () => {
@@ -1501,7 +1513,7 @@ Where implicit return gets really head-scratching is when we start returning fun
 const fullName = firstName => lastName => firstName + ' ' + lastName
 ```
 
-I will admit to sometimes having trouble wrapping my head around the more confusing strings of implicit return you see like this. What helps me is converting that back into a traditional non-implicit 'function' style until I feel comfortable with the logic:
+I will admit to sometimes having trouble wrapping my head around the more confusing strings of implicit return you see like this. What helps me is converting that back into a traditional non-implicit 'function' style in my head until I feel comfortable with the logic:
 
 ```javascript
 function fullName(firstName) {
@@ -1669,7 +1681,7 @@ const name = 'Brendan'
 const age = 35
 
 const objectOne = {
-  favoriteColor: 'purple,
+  favoriteColor: 'purple',
   name,
   age,
   mood: 'hungry'
@@ -1694,7 +1706,7 @@ Pub-sub is pretty much what is sounds like (the long version that is, we're not 
 
 Right now, we have a few things that happen when we change the store's state. We have a dispatch function that takes a message and then sends it to the reducer function. The reducer takes the action and gives back to the dispatch function a new version of the store's state. The dispatch function then saves that new state in a variable (currentState) that is available to the rest of the store (like getState). And that's pretty much it. 
 
-Where do subscriptions come into this? Well, if we want other programs using this store to get notified whenever the store's state changes, we need to have a way for them to subscribe (listen) to the store. That means a subscribe function (and unsubscribe, but we will ignore that for the moment). It also means we need to keep a list of all of our subscribers/listeners (there could be more than one place in a big program that would want to receive notifications of store changes). And at some point after the state has been changed we need to go through that list of listeners and notify them of the change (ie send them a copy of the new state). The most obvious location for that would be right after dispatch updates currentState. So why not just stick the notification logic right inside dispatch? Good idea, that's exactly what we'll do! 
+Where do subscriptions come into this? Well, if we want other programs using this store to get notified whenever the store's state changes, we need to have a way for them to subscribe (listen) to the store. That means a subscribe function (and unsubscribe, natch). It also means we need to keep a list of all of our subscribers/listeners (there could be more than one place in a big program that would want to receive notifications of store changes). And at some point after the state has been changed we need to go through that list of listeners and notify them of the change (ie send them a copy of the new state). The most obvious location for that would be right after dispatch updates currentState. So why not just stick the notification logic right inside dispatch? Good idea, that's exactly what we'll do! 
 
 However, before we do that, we'll need to figure out where to keep that list. We've already figured out that more than one of our store functions will need access to it: subscribe needs to add things to it, unsubscribe needs to remove things from it, and dispatch will need to read it to know where to send updates. So that means we should put it somewhere everyone can see it. How about right next to our other store variables? Good idea again, you're really on fire today! As a last note, since this is a list, we'll just use a simple array to store our listeners.
 
@@ -1762,6 +1774,338 @@ function createStore(reducer, initialState) {
     dispatch
   }
 }
+```
+
+Ok. So now we have a framework for what we need to handle listeners and a pub-sub pattern. How do we actually go about sending notifications?
+
+### Chapter 17: Call me back maybe
+
+In order for two separate programs (in this case Redux and whatever program is using Redux to manage state) to communicate, they need to have some kind of connection, right? We could of course build this in manually, a way for Redux to send and a way for the external program to receive notifications. The problem is that this means the program that uses Redux is effectively an extension of Redux because it has to build the receiver in a specific way to match what Redux does. That's not very flexible. 
+
+Instead of hard coding a receiving protocol, we should leave that to the external program to figure out. It should be free to do whatever it wants with our notifications. We just need a way to get them there in the first place. 
+
+How about if the external programs sent us a function that handled notifications? A listener function. We'd never have to know what's in it, just that we have to call it every time the state changes. We would always pass the new state object to the listener function, but after that our Redux store doesn't care what happens. That listener could do nothing, it could just record that changes happened but not what those changes were, it could just record the changes (like a time-travel debugger program would need to do), or it could take those changes and use them to change something inside of itself (updating based on state changes -- by far the most common use). It doesn't matter to our Redux what happens after we call the listeners with the new state. That makes it a lot simpler for us!
+
+So a listener function will be a function that comes from the external program and does somethign to the external program based on the new state that we pass it (or just based on the fact that it is being called at all). This listener function is an example of a callback function. A callback function is a function that is meant to be executed after something else happens. It's how we handle doing things in order when we don't know how long each thing will take to do. The external program has no way of predicting when it will receive updates from the store, but everytime that happens the callback will execute and handle those changes. This means the external program is free to go about it's business as usual instead of pausing everything to wait for updates.
+
+Let's make a very simplified version of this. First of all, we create a basic function that receives a callback function as an argument and then does some stuff and afterwards runs the callback function with state (this is basically passing it back to the external function we haven't written yet):
+
+```javascript 
+function aStore(callback) {
+  let storeState = 0
+  for(let i = 0; i < 1000000000; i++) {
+    storeState++
+  }
+
+  callback(storeState)
+}
+```
+
+Now, let's create another function that calls redux (this would be equivalent to creating a store and then subscribing to it with a listener) and passes it an internal function that changes it's internal state. We'll also add an interval that keeps displaying the program's state so we can tell when it changes:
+
+```javascript
+function aProgram() {
+  let programState = 42
+
+  function showState() {
+    console.log(programState)
+  }
+  
+  function callback(storeState) {
+    programState = storeState
+    showState()
+  }
+
+  showState()
+  aStore(callback)
+}
+```
+
+Now when we run aProgram(), it will display it's state (42) and then send a listener to redux which will count up to a billion before calling that listener with it's own internal state.
+
+If you run that, it will display the initial program state once and then when the redux loop is finished, it will cause the program to update and show 1000000000. But remember, this is a listener, not an RSVP. As long as redux keeps doing stuff we want it to keep calling that callback/listener, not just the one time. Let's make a very simple, hardcoded listener that is automatically subscribed to the store.
+
+```javascript
+function createStore(callback) {
+  let storeState = 0
+  let listener = callback
+  
+  function dispatch(newState) {
+    storeState = newState
+    listener(newState)
+  }
+
+  return {
+    dispatch
+  }
+}
+
+function aProgram() {
+  let programState = 42
+
+  function showState() {
+    console.log(programState)
+  }
+  
+  function callback(storeState) {
+    programState = storeState
+    showState()
+  }
+
+  showState() // 42
+  const store = createStore(callback) // Now we can do store.dispatch()
+  store.dispatch(58)
+  store.dispatch(100)
+  showState() // 100
+}
+```
+
+The output from running aProgram() should be: 42, 58, 100, 100. We are directly calling showstate on the first and last calls, the two in the middle are done by our store when it finishes updating.
+
+And that's it. The listener is a callback, but what aProgram does inside the callback listener isn't something our store has any clue about, all it knows is that it needs to call it after the state is updated and pass in the new state. However, if you remember, the store that we've been building all this time has a getState function already. Right now we still require external callback listeners to receive the new state directly, that's not particularly flexible. What if they don't want it? Well, instead, a listener can just act whenever something changes, and if wants to get the state it can, if it doesn't, it can do something else. It's more flexible that way. Let's add that into our toy example above:
+
+```javascript
+function createStore(callback) {
+  let storeState = 0
+  let listener = callback
+  
+  function dispatch(newState) {
+    storeState = newState
+    listener()
+  }
+
+  function getState() {
+    return storeState
+  }
+
+  return {
+    dispatch,
+    getState
+  }
+}
+
+function aProgram() {
+  let programState = 42
+
+  function showState() {
+    console.log(programState)
+  }
+  
+  function callback() {
+    programState = store.getState()
+    showState()
+  }
+
+  showState() // 42
+  const store = createStore(callback) // Now we can do store.dispatch()
+  store.dispatch(58)
+  store.dispatch(100)
+  showState() // 100
+}
+```
+
+If you run aProgram() again, you'll see the exact same results, but without having to pass anything to the listener at all. We just call it.
+
+Let's implement this in our real store now.
+
+Chapter 18: Papa can you hear me?
+
+The biggest difference between our example subscription in the last chapter and what we want to have in our actual store is that we'll be using an array of listeners rather than a single one. Listeners also won't be passed in immediately when the store is created. We will use a subscribe function to add them later (as often as we want). So instead of calling the listener at the end of dispatch() we need to iterate through the array of listeners and call each one in turn:
+
+```javascript
+// Don't try and run this code directly since it's part of the larger createStore function
+// We'll refactor our full createStore function after we finish creating the internal subscription methods
+let currentState = initialState
+let currentReducer = reducer
+let currentListeners = []
+let isDispatching = false
+
+function dispatch(action) {
+  // We'll cut out the error checking to make it easier to focus on the functionality
+
+  isDispatching = true
+  currentState = currentReducer(currentState, action)
+  isDispatching = false
+
+  for(let i = 0; i < currentListeners.length; i++) {
+    const listener = currentListeners[i]
+    listener()
+  }
+}
+```
+
+And that's it for notifying listeners that something has changed. Of course, we don't have any listeners right now so it's pretty meaningless. Let's figure out how to do that next.
+
+Chapter 19: Subscriptions are rising
+
+We need to create a new public function that takes in a callback from an external source and adds it to our currentListeners array. Something like this:
+
+```javascript
+let currentListeners = []
+
+function subscribe(listener) {
+  currentListeners.push(listener)
+}
+```
+
+Hold on a second, did I say something like that? I meant that exactly. Yeah, that's it. Sure, we should do some error checking, especially to make sure the listener is actually a function, but otherwise, that's pretty much how subscribing works. 
+
+There is a problem with this approach though and that is we are directly changing (mutating) our array. If we've followed one core tenet throughout this guide it's that we should avoid mutations whereever possible. For example, if one part of our program tries to unsubscribe while another part is calling dispatch which will also be using that array at the same time. How do we avoid that? Well, we create a new copy to change instead of changing the old one directly. Dispatch will use the array of current listeners, while any changes we want to make we'll make to a new array of listeners (this will be the array of listeners we use in future dispatch calls so we can call it nextListeners).
+
+The nextListeners array will start as a simple copy of the currentListeners but before we make changes to it (like adding new subscribers) we'll check to see if it is actually the same array reference as currentListeners. If it is we'll need to create a fresh copy for it to make changes to. Since the idea is to make sure we can change (mutate) our nextListeners array without affecting the currentListeners array (which now becomes a historical record of previous listeners), we can create and call a helper function ensureCanMutateNextListeners(). It really rolls off the tongue, right! Here's what it should look like:
+
+```javascript
+let currentListeners = []
+let nextListeners = currentListeners 
+// Both variables currently point to the same array container when our store is created
+
+function ensureCanMutateNextListeners() {
+  if(currentListeners === nextListeners) {
+    nextListeners = currentListeners.slice() 
+    // Remember, this gives us a fresh copy, not just a reference to the same array
+  }
+}
+```
+
+That's all there is to it. Whenever we run that function we can be sure that our current array of listeners won't be affected by any changes we make. So we'll run this function before we add listeners and before we remove them:
+
+```javascript
+let currentListeners = []
+let nextListeners = currentListeners 
+// Both variables currently point to the same array container when our store is created
+
+function ensureCanMutateNextListeners() {
+  if(currentListeners === nextListeners) {
+    nextListeners = currentListeners.slice() 
+    // Remember, this gives us a fresh copy, not just a reference to the same array
+  }
+}
+
+function subscribe(listener) {
+  ensureCanMutateNextListeners()
+  nextListeners.push(listener)
+}
+```
+
+Let's also add some typical checks. We want to make sure the listener is a function and we want to make sure subscribe isn't called from inside an action (isDispatching):
+
+```javascript
+function subscribe(listener) {
+  if(typeof listener !== 'function') {
+    console.log('Error. Expected listener to be a function')
+    return
+  }
+
+  if(isDispatching) {
+    console.log('You may not subscribe while an action is being dispatched to the reducer')
+    return
+  }
+
+  ensureCanMutateNextListeners()
+  nextListeners.push(listener)
+}
+```
+
+But when do we update currentListeners? It doesn't matter how many new subscriptions happen or how many listeners unsubscribe until it comes time to actually call those listeners. Since the only time we really care about what listeners are currently subscribed is right before we actually call them, we should worry about this where that happens, at the end of our dispatch function.  So let's change our dispatch a little bit more.
+
+```javascript
+let currentState = initialState
+let currentReducer = reducer
+let currentListeners = []
+let isDispatching = false
+
+function dispatch(action) {
+
+  isDispatching = true
+  currentState = currentReducer(currentState, action)
+  isDispatching = false
+
+  currentListeners = nextListeners 
+  for(let i = 0; i < currentListeners.length; i++) {
+    const listener = currentListeners[i]
+    listener()
+  }
+}
+```
+
+Just to be even more clear about what we are doing, let's create a new reference to the currentListeners and just call it listeners:
+
+```javascript
+  currentListeners = nextListeners
+  const listeners = currentListeners
+  for(let i = 0; i < listeners.length; i++) {
+    const listener = listeners[i]
+    listener()
+  }
+```
+
+And now, since we are taking the nextListeners reference and passing it to currentListeners and then taking that and passing it into our new listeners variable, we can just use this shorthand:
+
+```javascript
+  const listeners = currentListeners = nextListeners
+  for(let i = 0; i < listeners.length; i++) {
+    const listener = listeners[i]
+    listener()
+  }
+```
+
+Now, you may be wondering why we didn't also create a fresh copy (slice) of the nextListeners to give to currentListeners, something like ensureCanMutateCurrentListeners(). Well, we don't have to. We're not actually going to change anything, we're just going through the array of functions and calling each one. 
+
+Chapter 21: I want to get off this crazy ride!
+
+Now that we can subscribe and call our listeners, what exactly does unsubscribing entail? In some ways it's pretty much the opposite of subscribe. For example instead of adding to the listeners array we need to remove the listener from the array. But that's where it starts to get a bit tricker. In order to remove it from the array, we need to find it, in order to find it we need to have some way to identify it. 
+
+But before we even begin to deal with how to identify it (and that will be the harder part), let's do a quick refresher on the general mechanics of removing something from an array.
+
+Removing an element from an array is not as easy or straightforward as adding (pushing) it (unless it's at the beginning (array.shift()) or the end (array.pop()) of the array). Here are two ways we can do it when the location of the element is unknown but the element itself is known:
+
+```javascript
+const el1 = 'Hello'
+const el2 = 'Goodbye'
+const el3 = 'nanana'
+let array = [el1, el2, el3]
+
+console.log(array) // ['Hello', 'Goodbye', 'nanana']
+
+// 1. Using splice 
+// First we need the index
+const indexOfElToDelete = array.indexOf(el1)
+// The second argument tells splice how many elements to remove starting from the index we give it
+// We just want to delete one thing, so it's 1
+array.splice(indexOfElToDelete, 1)
+
+console.log(array) // ['Goodbye', 'nanana']
+
+// 2. Using filter
+// This method does not change the original array, to save our changes we either need to save the result
+// to a new array or overwrite the old array with the results. We'll do the latter (if we used a const
+// declaration for our array we wouldn't be able to replace it like this)
+// This method will look at each elementInArray and if it doesn't match the thing we want to remove (el2) 
+// it will return it unharmed.
+array = array.filter(elementInArray => elementInArray !== el2)
+
+console.log(array) // ['nanana']
+```
+The real Redux favors the splice method. So we will use that too. The only problem with using splice is that we are directly changing (mutating) our original array. Thankfully, we've already created a handy method, ensureCanMutateNextListeners(), that will solve that problem for us. We can do something like this:
+
+```javascript
+function unsubscribe(listener) {
+  ensureCanMutateNextListeners()
+  const index = nextListeners.indexOf(listener)
+  nextListeners.splice(index, 1)
+}
+```
+
+Ok, that's all well and good, but the big question is how does our external program get access to this unsubscribe function, and how does the function get access to the listener so that it can find it and remove it from our array of listeners?
+
+It's worth noting that, like many questions in programming, there isn't one right answer. For example, the most obvious solution might be to add an unsubscribe method to the store object we return at the end of createStore. Then the external program can call that with the listener it wants to unsubscribe from at a later time. But that means the external program has to keep track of the listener callback just for the purposes of calling unsubscribe later. Instead, we're going to use a method that brings us back to a concept we covered much earlier, closures.
+
+
+
+
+
+
+
 
 
 
