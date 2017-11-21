@@ -475,7 +475,7 @@ There's another benefit to storing isChangingState externally, we can use it wit
 ```javascript
 getState: function() {
   if(this.isChangingState) {
-    console.log('You can't call getState while the state is being changed')
+    console.log('You can\'t call getState while the state is being changed')
     return
   }
   return this.state
@@ -528,7 +528,7 @@ function ourStore() {
 
   function getState() {
     if(isChangingState) {
-      console.log('You can't call getState while the state is being changed')
+      console.log('You can\'t call getState while the state is being changed')
       return
     } 
     return state 
@@ -606,7 +606,7 @@ function createStore() {
 
   function getState() {
     if(isDispatching) {
-      console.log('You can't call getState while the state is being changed')
+      console.log('You can\'t call getState while the state is being changed')
       return
     } 
     return state 
@@ -693,7 +693,7 @@ function createStore() {
 
   function getState() {
     if(isDispatching) {
-      console.log('You can't call getState while the state is being changed')
+      console.log('You can\'t call getState while the state is being changed')
       return
     } 
     return currentState 
@@ -1908,7 +1908,7 @@ If you run aProgram() again, you'll see the exact same results, but without havi
 
 Let's implement this in our real store now.
 
-Chapter 18: Papa can you hear me?
+### Chapter 18: Papa can you hear me?
 
 The biggest difference between our example subscription in the last chapter and what we want to have in our actual store is that we'll be using an array of listeners rather than a single one. Listeners also won't be passed in immediately when the store is created. We will use a subscribe function to add them later (as often as we want). So instead of calling the listener at the end of dispatch() we need to iterate through the array of listeners and call each one in turn:
 
@@ -1936,7 +1936,7 @@ function dispatch(action) {
 
 And that's it for notifying listeners that something has changed. Of course, we don't have any listeners right now so it's pretty meaningless. Let's figure out how to do that next.
 
-Chapter 19: Subscriptions are rising
+### Chapter 19: Subscriptions are rising
 
 We need to create a new public function that takes in a callback from an external source and adds it to our currentListeners array. Something like this:
 
@@ -2051,7 +2051,7 @@ And now, since we are taking the nextListeners reference and passing it to curre
 
 Now, you may be wondering why we didn't also create a fresh copy (slice) of the nextListeners to give to currentListeners, something like ensureCanMutateCurrentListeners(). Well, we don't have to. We're not actually going to change anything, we're just going through the array of functions and calling each one. 
 
-Chapter 21: I want to get off this crazy ride!
+### Chapter 20: I want to get off this crazy ride!
 
 Now that we can subscribe and call our listeners, what exactly does unsubscribing entail? In some ways it's pretty much the opposite of subscribe. For example instead of adding to the listeners array we need to remove the listener from the array. But that's where it starts to get a bit tricker. In order to remove it from the array, we need to find it, in order to find it we need to have some way to identify it. 
 
@@ -2098,10 +2098,95 @@ function unsubscribe(listener) {
 
 Ok, that's all well and good, but the big question is how does our external program get access to this unsubscribe function, and how does the function get access to the listener so that it can find it and remove it from our array of listeners?
 
-It's worth noting that, like many questions in programming, there isn't one right answer. For example, the most obvious solution might be to add an unsubscribe method to the store object we return at the end of createStore. Then the external program can call that with the listener it wants to unsubscribe from at a later time. But that means the external program has to keep track of the listener callback just for the purposes of calling unsubscribe later. Instead, we're going to use a method that brings us back to a concept we covered much earlier, closures.
+It's worth noting that, like many questions in programming, there isn't one right answer. For example, the most obvious solution to you might be to add an unsubscribe method to the store object we return at the end of createStore. Then the external program can call that with the listener it wants to unsubscribe from at a later time. But that means the external program has to keep track of the listener callback just for the purposes of calling unsubscribe later (it needs the listener to be able to find it from the array of nextListeners in order to remove it). 
 
+We're going to use a different method. One that brings us back to a concept we covered much earlier, closures. Remember, a function always stays connected to any variables that it references at the time of its creation, even if it subsequently gets passed all over the place. And we already have a reference to the appropriate listener inside of the subscribe function. So if we create the unsubscribe function inside of subscribe, it will always be attached to the appropriate listener. Of course we need to make sure we return that function at the same time, otherwise there won't be any way to access it. Just for good measure, we should also prevent unsubscribe from being called inside an action. We'll use isDispatching once again to make sure of that. When we put everything together it should look like this:
 
+```javascript
+function subscribe(listener) {
+  // Error checking is temporarily removed for clarity
 
+  ensureCanMutateNextListeners()
+  nextListeners.push(listener)
+
+  return function unsubscribe() {
+    if(isDispatching) {
+      console.log('You can\'t call unsubscribe while the store is dispatching an action')
+      return
+    }
+
+    ensureCanMutateNextListeners()
+    const index = nextListeners.indexOf(listener)
+    nextListeners.splice(index, 1)  
+  }
+}
+```
+
+So, now we can do this:
+
+```javascript
+const callback = () => {}  // Empty, placeholder callback
+const unsubscribe = subscribe(callback) // We simultaneously subscribe and save the returned unsubscribe function
+unsubscribe() // We unsubscribe and wash our hands of this terrible business
+```
+
+Voila. A working subscribe/unsubscribe system.
+
+### Chapter 21: Things can always get worse
+
+So we have a working unsubscribe function and that's awesome but we should take a minute to also consider how it might be possible to mess things up. For example, what happens when these functions are called more than once? 
+
+If we call subscribe multiple times with the different callback listeners, that's fine, that's actually the intended use case. If we call it multiple times with the same listener? Well, things could get weird. But, there isn't a perfect solution. Hopefully, if the listener is doing the right thing (like updating local state), its just going to make the program less efficient with redundant calls. 
+
+Where things can really go off the rails is when we call unsubscribe multiple times. Why is that? It should only work if it finds the listener it's looking for right? Well, no. Array.indexOf(element) normally returns the index of an element in an array. But if it can't find the element it returns the number -1. This can be useful, it's a common tool used when trying to find out if something is in an array at all:
+
+```javascript
+if(array.indexOf(element) !== -1) {
+  //We know the element is in the array and we can do something with it
+  console.log(array[array.indexOf(element)])
+}
+```
+
+But the problem is we are also using Array.splice(). When we give splice a negative index it still works, it just starts counting from the end of the array instead of the beginning:
+
+```javascript
+let array = [1,2,3,4,5]
+array.splice(-1, 1)
+console.log(array) // [1,2,3,4]
+```
+
+Clearly that's not good. One subscriber could call unsubscribe multiple times and wipe out listeners from other subscribers. So how can we insure that unsubscribe can only be called once per listener? How about a simple boolean? We can check it before we run unsubscribe, something that tells us whether the listener is subscribed. It should start off as true when we run the subscribed function. When we run the unsubscribe function we can set it to false. If we check to make sure it's true at the top of unsubscribe, any further calls won't do anything. Remember, closures mean unsubscribe and subscribe will be able to share access to the same variables (just like they do with the listener callback). Like this:
+
+```javascript
+function subscribe(listener) {
+  // Error checking is temporarily removed for clarity
+
+  let isSubscribed = true
+  ensureCanMutateNextListeners()
+  nextListeners.push(listener)
+
+  return function unsubscribe() {
+    if(!isSubscribed) {
+      console.log('This listener is already unsubscribed. You can\'t unsubscribe again')
+      return
+    }
+
+    if(isDispatching) {
+      console.log('You can\'t call unsubscribe while the store is dispatching an action')
+      return
+    }
+
+    isSubscribed = false
+    ensureCanMutateNextListeners()
+    const index = nextListeners.indexOf(listener)
+    nextListeners.splice(index, 1)  
+  }
+}
+```
+
+### Chapter 22: Error, error does not compute.
+
+Up to now, we've been using console.log to notify when an error occurs. That can be helpful for a programmer doing some debugging but what happens if our external program wants to know when something goes wrong? Nothing. The program that is calling functions on the store has no way to know when an error occurs or react to them. We need to find a better way to handle errors. 
 
 
 
