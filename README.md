@@ -3,17 +3,21 @@
 
 You're still pretty new to Javascript. But now the pressure is on to use a framework, so you've picked up React. You're starting to get the basic gist of it, there's still a lot of magic, especially when it comes to Webpack. You've been hearing about Redux for almost as long as you've been hearing about React. Everything you read tells you you'll know when you need it, don't rush it. But you know the truth is that every job description you see mentions React and Redux in the same breath. So you figure there's no time to waste. Even if your personal project that you're making to learn React is pretty simple, you still want to use the same tools the pros use. 
 
-And then you hit the inevitable wall of jargon, split files, and boilerplate. 
+And then you hit the inevitable wall of jargon, endless files, and boilerplate. 
 
 Does it really take 5 files to deal with one variable?? 
 
-The simple answer is no. It doesn't. Redux is an amazing tool in large part because it is so simple. That simplicity also allows a great deal of flexibility in how it's structured and used. That flexibility means a lot of time has gone into finding the best way among many of doing things (best practices). And those best practices means sometimes it can be very hard as a beginner to see the forest for the trees. Our goal today is to build a very simple version of redux in the most ELI5 way we can, one step at a time. 
+The simple answer is no. It doesn't. Redux is an amazing tool in large part because it is so simple. That simplicity also allows a great deal of flexibility in how it's structured and used. That flexibility means a lot of time has gone into finding the best way among many of doing things (best practices). And those best practices means sometimes it can be very hard as a beginner to see the forest for the trees. Our goal today is to build a simplified version of redux in the most ELI5 way we can, one step at a time. 
 
-Along the way we'll explore a lot of important Javascript concepts that might similarly feel a bit confusing as a beginner and, similarly, aren't really all that difficult at all. Large sections of this guide will look at these general concepts and talk with the expectation that even if you've learnt them, they may still feel a little unclear. 
+Along the way we'll explore a lot of important Javascript concepts that might feel a bit confusing as a relative beginner and, similarly, aren't really all that difficult at all. Large sections of this guide will look at these general concepts and talk with the expectation that even if you've learnt them, they may still feel a little unclear. 
 
-By the end, we will hopefully have a clearer grasp of some of the most useful Javascript rulesand patterns and, at the same time, a better understanding of Redux (and why implementing it in small scale projects isn't entirely a waste of time and effort).
+By the end, we will hopefully have a clearer grasp of some of the most useful Javascript rules and patterns and, at the same time, a better understanding of Redux (and why implementing it in small scale projects isn't entirely a waste of time and effort).
 
-I should mention that we aren't really going to talk about React in this course. Redux is used with it most commonly, but Redux is really just a vanilla Javascript library and can be used anywhere. 'react-redux' is a library that is built to connect React components with the Redux library. after we have a strong command of Redux it will be a lot easier to see what is happening in react-redux, but we won't build that library from scratch as well, just cover the essentials to feel like we know what is going on underneath the hood. 
+I should mention that we aren't really going to talk about React in this guide. Redux is used with it most commonly, but Redux is really just a vanilla Javascript library and can be used anywhere. 'react-redux' is a library that is built to connect React components with the Redux library. After we have a strong command of Redux it will be a lot easier to see what is happening in react-redux, but we won't build that library from scratch as well, we'll just touch on it at the end to feel like we know what is going on underneath the hood.
+
+Finally, I would to also say, in no uncertain terms, that this guide is by no means written to cast aspersions on the documentation that surrounds Redux itself. Not only is the Redux source code clear and elegant, the creators have done an amazing job explaining and documenting their work. There is an excellent series on Egghead by Dan Abramov that introduces the library by rebuilding it from scratch, much like we are doing today. This guide is ust aimed at people who may be still coming to grips with Javascript itself. Exposure to Redux is happening sooner and sooner for new developers and this is written with those coders in mind.
+
+Without further ado, let's get started! 
 
 ## Part 1: Creating a Redux store
 
@@ -81,13 +85,13 @@ function addChild(newChild) {
 
 ### Chapter 2: Let's start making an interface
 
-Now that we have our state (variables) in one place, we can get even fancier. Instead of directly changing (setting) our state, let's just tell our state to change itself. Why? Well, if for no other reason than to not worry about how it happens. Our functions right now are simple, but if we made it a bit more complicated, if we wanted to add in extra checks to make sure we couldn't do things like this:
+Now that we have our state (variables) in one place, we can get even fancier. Instead of directly changing (setting) our state, let's just tell our state to change itself. Why? Well, we'll do it if for no other reason than to not have to worry about how it happens. Our functions right now are simple, but if we made it a bit more complicated we would want to add in extra checks to make sure we couldn't do things like this:
 
 ```javascript
 addChild(0.7734)
 ```
 
-When we make the state object responsible for these things it keeps our other functions simple. THe idea being that if more than one function needs to use the same state, why repeat all that extra work? Let the state handle itself.
+When we make the state object responsible for these things it keeps our other functions simple (these other functions represent external programs using the state management library we're building). The idea being that if more than one function needs to use the same state, why repeat all that extra work? Let the state handle itself.
 
 For example, let's say we want to make sure a newMood is a string. We would do something like this:
 
@@ -211,8 +215,6 @@ Now, anytime we want to see what's happening we just ask for the current state a
 
 You've probably heard a lot of chatter about something called DRY code. Man, do programmers like their acronyms and, at least in the case of WYSIWYG, have a pretty limited sense of irony. It just means try not to do the same thing over and over again in different places. If you find you are repeating yourself, take that thing you are repeating, separate it and then just reference it over and over again instead of rewriting it each time you need it.
 
-LETS MOVE THIS TO LATER.BECAUSE IT STARTS LEADING INTO SEPARATE ACTIONS. START WITH READING.
-
 In our case, it's not really a big deal, but imagine we had a lot of similar variables and a lot of similar functions to do stuff to them.
 
 ```javascript
@@ -251,9 +253,9 @@ let ourStore = {
   }
 }
 ```
-(NB: object.hasOwnProperty(keyName) let's us find out if a certain key/name already exists in an object. We'll use this in the following exercise to find out if something already exists before trying to add it or change it or delete it.)
+(NB: object.hasOwnProperty(key) let's us find out if a certain key already exists in an object. We'll use this in the following exercise to find out if something already exists before trying to add it or change it or delete it.)
 
-Continuing we now have one function to change our state (setter), but there are other ways to change state, and that means we'll eventually need a lot of functions again. Deleting, adding, apppending... 
+Continuing on, we now have one function to change our state (setter). However, there are other ways to change state and that means we'll eventually need a lot of functions again. Deleting, adding, apppending... 
 
 
 ```javascript
@@ -343,15 +345,12 @@ let ourStore = {
   },
   getState: function() { return this.state },
   changeState: function(action) {
-    // Remember, return here will stop the rest of the function from running.
+    // Remember, 'return' here will stop the rest of the function from running.
 
-    if(!action) {
-      return
-    }
     if(typeof action !== 'object') {
       return
     }
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -396,13 +395,10 @@ let ourStore = {
   },
   getState: function() { return this.state },
   receiveActionAndSendActionToChangeState: function(action) {
-    if(!action) {
-      return
-    }
     if(typeof action !== 'object') {
       return
     }
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -535,15 +531,12 @@ function ourStore() {
   }
 
   function receiveActionAndSendActionToChangeState(action) {
-    if(!action) {
-      return
-    }
 
     if(typeof action !== 'object') {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -613,15 +606,12 @@ function createStore() {
   }
 
   function dispatch(action) {
-    if(!action) {
-      return
-    }
 
     if(typeof action !== 'object') {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -700,15 +690,12 @@ function createStore() {
   }
 
   function dispatch(action) {
-    if(!action) {
-      return
-    }
 
     if(typeof action !== 'object') {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -915,19 +902,20 @@ function createStore() {
   let isDispatching = false
 
   function getState() { 
-    return currentState 
+    if(isDispatching) {
+      console.log('You can\'t call getState while the state is being changed')
+      return
+    } 
+    return currentState   
   }
 
   function dispatch(action) {
-    if(!action) {
-      return
-    }
 
     if(typeof action !== 'object') {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -986,19 +974,20 @@ function createStore() {
   let isDispatching = false
 
   function getState() { 
-    return currentState 
+    if(isDispatching) {
+      console.log('You can\'t call getState while the state is being changed')
+      return
+    } 
+    return currentState   
   }
 
   function dispatch(action) {
-    if(!action) {
-      return
-    }
 
     if(typeof action !== 'object') {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
+    if(typeof action.type === 'undefined') {
       return
     }
 
@@ -1057,8 +1046,11 @@ function createStore() {
   let isDispatching = false
 
   function getState() { 
-    return currentState 
-  }
+    if(isDispatching) {
+      console.log('You can\'t call getState while the state is being changed')
+      return
+    } 
+    return currentState     }
 
   function dispatch(action) {
     if(!action) {
@@ -1071,8 +1063,8 @@ function createStore() {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
-      console.log("Actions need to have a 'type' key." )
+    if(typeof action.type === 'undefined') {
+      console.log("Actions need to have a 'type' key with a value that is not undefined" )
       return
     }
 
@@ -1167,7 +1159,11 @@ function createStore(reducer, initialState) {
   let isDispatching = false
 
   function getState() { 
-    return currentState 
+    if(isDispatching) {
+      console.log('You can\'t call getState while the state is being changed')
+      return
+    } 
+    return currentState     
   }
 
   function dispatch(action) {
@@ -1181,8 +1177,8 @@ function createStore(reducer, initialState) {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
-      console.log("Actions need to have a 'type' key." )
+    if(typeof action.type === 'undefined') {
+      console.log("Actions need to have a 'type' key with a value that is not undefined" )
       return
     }
 
@@ -1323,7 +1319,11 @@ function createStore(reducer, initialState) {
   let isDispatching = false
 
   function getState() { 
-    return currentState 
+    if(isDispatching) {
+      console.log('You can\'t call getState while the state is being changed')
+      return
+    } 
+    return currentState   
   }
 
   function dispatch(action) {
@@ -1337,8 +1337,8 @@ function createStore(reducer, initialState) {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
-      console.log("Actions need to have a 'type' key." )
+    if(typeof action.type === 'undefined') {
+      console.log("Actions need to have a 'type' key with a value that is not undefined" )
       return
     }
 
@@ -1355,7 +1355,7 @@ function createStore(reducer, initialState) {
   // When the store is first created, we want to dispatch an initial action that will
   // make sure our reducer returns it's initial state object and populates our
   // currentState variable before getState can ever be called.
-  dispatch(initialActon)
+  dispatch(initialAction)
 
   return {
     getState,
@@ -1728,7 +1728,11 @@ function createStore(reducer, initialState) {
   let isDispatching = false
 
   function getState() { 
-    return currentState 
+    if(isDispatching) {
+      console.log('You can\'t call getState while the state is being changed')
+      return
+    } 
+    return currentState    
   }
 
   function dispatch(action) {
@@ -1742,8 +1746,8 @@ function createStore(reducer, initialState) {
       return
     }
 
-    if(!action.hasOwnProperty('type')) {
-      console.log("Actions need to have a 'type' key." )
+    if(typeof action.type === 'undefined') {
+      console.log("Actions need to have a 'type' key with a value that is not undefined" )
       return
     }
 
@@ -1767,7 +1771,7 @@ function createStore(reducer, initialState) {
     // TODO
   }
 
-  dispatch(initialActon)
+  dispatch(initialAction)
 
   return {
     getState,
@@ -1970,17 +1974,6 @@ function ensureCanMutateNextListeners() {
 That's all there is to it. Whenever we run that function we can be sure that our current array of listeners won't be affected by any changes we make. So we'll run this function before we add listeners and before we remove them:
 
 ```javascript
-let currentListeners = []
-let nextListeners = currentListeners 
-// Both variables currently point to the same array container when our store is created
-
-function ensureCanMutateNextListeners() {
-  if(currentListeners === nextListeners) {
-    nextListeners = currentListeners.slice() 
-    // Remember, this gives us a fresh copy, not just a reference to the same array
-  }
-}
-
 function subscribe(listener) {
   ensureCanMutateNextListeners()
   nextListeners.push(listener)
@@ -2184,10 +2177,443 @@ function subscribe(listener) {
 }
 ```
 
+At this point we won't be adding any more functionality. We'll cleanup a little bit, put all the pieces together and see what we've made in all it's glory.
+
+## Section 4: Cleanup and error handling 
+
 ### Chapter 22: Error, error does not compute.
 
-Up to now, we've been using console.log to notify when an error occurs. That can be helpful for a programmer doing some debugging but what happens if our external program wants to know when something goes wrong? Nothing. The program that is calling functions on the store has no way to know when an error occurs or react to them. We need to find a better way to handle errors. 
+Up to now, we've been using console.log to notify when an error occurs. That can be helpful for a programmer doing some debugging but what happens if our external program wants to know when something goes wrong? Nothing. The program that is calling functions on the store has no way to know when an error occurs or react to them. We need to find a better way to handle errors. That's where the 'throw' statement comes in.
 
+Throwing is pretty straightforward, but there are still a few particulars we should review. First of all, we can actually throw anything we want, it doesn't have to be an Error object. However, we will stick to Errors for this guide. For one, it makes it more predictable for external programs that are trying to handle Errors to know what to expect. We also need to create Error instances with the 'new' keyword. A basic example looks like this:
+
+```javascript
+throw new Error('I am an error message')
+```
+
+Let's go over how throw behaves in different situations. First of all, if you call throw in the normal operation of a program it will cause that program to immediately terminate, no questions asked! However, in many cases, we want to be able to detect and deal with errors but not actually cause a program to terminate completely. In order to do that, we use another tool, try...catch blocks.
+
+Basically, we put whatever we want to do inside the 'try' block, but because we are planning ahead for problems, we put any error handling in the 'catch' block. If anything happens inside the 'try' block that causes an error, the program will stop executing the rest of the code in the 'try' and skip down to the 'catch' area and execute that code instead (catch takes an argument which is the error that caused it to be triggered). Let's see how that works:
+
+```javascript
+try {
+  console.log('Now you see me')
+  throw new Error('Something went wrong')
+  console.log('Now you don\'t')
+}
+catch (err) {
+  console.log(err)
+}
+```
+
+If we run the above code we should see 'Now you see me' followed by 'Error: Something went wrong' in the console. So whatever we throw will get caught by any try...catch block that is in contained in. Importantly, if there are multiple nested try...catch blocks, the first one that is triggered by the 'throw' is the only one that will see it. So if we wrap anything in try...catch inside our Redux than external programs will never see the Errors either.
+
+The onus will be on the external program to handle errors, we just want to make sure they get there. So we're going to start replacing our console.log error handling with throwing errors.
+
+For example, something like this:
+
+```javascript
+if(typeof action !== 'object') {
+  console.log('Actions need to be a simple object.')
+  return
+}
+```
+
+becomes this:
+
+```javascript
+if(typeof action !== 'object') {
+  throw new Error('Actions need to be a simple object.')
+}
+```
+
+You might notice we got rid of the return statement as well. Since 'throw' causes the function to stop running at the point it is called, it functions just like using 'return' to exit a function prematurely.
+
+There is one other kind of error handling we should consider. Right now, in our dispatch function, we are doing this:
+
+```javascript
+isDispatching = true
+currentState = currentReducer(currentState, action)
+isDispatching = false
+```
+
+This piece of code seems pretty straightforward right? Nothing can go wrong with switching a boolean value, but what about the call to our reducer? At this point in a dispatch call we've already checked the action for errors. But maybe something goes wrong inside the reducer? We didn't create it after all, who knows what's in there. The difference here is that we aren't going to throw an error to the external function if something happens. Why not? Well, if we stop executing the dispatch call before we reset isDispatching back to false, the rest of the store becomes unusable until a new dispatch is called. We still want to have an error trigger for an external program to handle, but we want to make sure it doesn't cause us to terminate dispatch until after we've reset the boolean.
+
+We're going to use a slightly different version of try..catch to do that. There's also a third block, 'finally'. It doesn't matter what happens in 'try' or 'catch', what's in 'finally' will always run afterwards. Eg:
+
+```javascript
+try {
+  console.log('Now you see me') // 'Now you see me'
+  throw new Error('Something went wrong')
+  console.log('Now you don\'t')
+}
+catch (err) {
+  console.log(err) // 'Something went wrong'
+}
+finally {
+  console.log('You\'ll always see me!') // 'You'll always see me!'
+}
+```
+
+Now, once again, we aren't trying to catch errors internally in our store. We still want to leave that to whatever external program is calling the store. So instead of try...catch...finally we'll drop the 'catch' and just use try...finally. Like so:
+
+```javascript
+try {
+  isDispatching = true
+  currentState = currentReducer(currentState, action)
+}
+finally {
+  isDispatching = false
+}
+```
+
+So, if there is an error, we'll never get to the part in dispatch where the listeners are called. But we'll at least reset isDispatching before the dispatch call terminates (because 'finally' always runs, even if the function is about to terminate because of a 'throw' error). That means it will still be possible to call other functions (subscribe, getState, unsubscribe) before our next dispatch call resets the boolean anyway.
+
+### Chapter 23: And on the seventh line, he rested
+
+We've come a long way since the last time we looked at our createStore in total. In that time we've added in subscriptions, mutation checkers, and better error handling. Let's put all these new elements together and see our final product!
+
+```javascript
+function createStore(reducer, initialState) {
+  if(typeof reducer !== 'function') {
+    console.log('We expected the reducer to be a function. Try again!')
+    return
+  }
+
+  const initialAction = {
+    type: '@@redux@@reserved/INIT' + Math.random().toString().substring(7).split('').join('.')
+  }
+  let currentState = initialState
+  let currentReducer = reducer
+  let currentListeners = []
+  let nextListeners = currentListeners 
+  let isDispatching = false
+
+  // This is a private function, meaning we won't export (expose) it
+  function ensureCanMutateNextListeners() {
+    if(currentListeners === nextListeners) {
+      nextListeners = currentListeners.slice() 
+    }
+  }
+
+  function getState() { 
+    if(isDispatching) {
+      throw new Error('You can\'t call getState while the state is being changed')
+    } 
+    return currentState
+  }
+
+  function dispatch(action) {
+    if(typeof action !== 'object') {
+      throw new Error('Actions need to be a simple object.')
+    }
+
+    if(typeof action.type === 'undefined') {
+      throw new Error("Actions need to have a 'type' key with a value that is not undefined" )
+    }
+
+    if(isDispatching) {
+      throw new Error('You cannot dispatch an action from inside a reducer!')
+    }
+
+    try {
+      isDispatching = true
+      currentState = currentReducer(currentState, action)
+    }
+    finally {
+      isDispatching = false
+    }
+    
+    const listeners = currentListeners = nextListeners
+    for(let i = 0; i < listeners.length; i++) {
+      const listener = listeners[i]
+      listener()
+    }
+  }
+
+  function subscribe(listener) {
+    if(typeof listener !== 'function') {
+      throw new Error('Error. Expected listener to be a function')
+    }
+
+    if(isDispatching) {
+      throw new Error('You may not subscribe while an action is being dispatched to the reducer')
+    }
+
+    let isSubscribed = true
+    ensureCanMutateNextListeners()
+    nextListeners.push(listener)
+
+    return function unsubscribe() {
+      if(!isSubscribed) {
+        return
+      }
+
+      if(isDispatching) {
+        throw new Error('You can\'t call unsubscribe while the store is dispatching an action')
+      }
+
+      isSubscribed = false
+      ensureCanMutateNextListeners()
+      const index = nextListeners.indexOf(listener)
+      nextListeners.splice(index, 1)  
+    }
+  }
+
+  dispatch(initialAction)
+
+  return {
+    getState,
+    dispatch,
+    subscribe
+  }
+}
+```
+
+You may wonder why we aren't throwing an error in unsubscribe() when the listener is already unsubscribed. After all, we replaced all the other console.log/return instances with throw. If you think about it though, there's nothing wrong with calling this function more than once, we just want to prevent it from having any effect after the first call.
+
+Ok. That's it, we're done. We didn't rebuild Redux completely, but we will take a moment to discuss a few of the features we haven't covered. First though, let's create a dummy program that let's us do something with our Redux redux so we can better see how it behaves. We want this to be as simple as possible, so it will just be a counter. Since we want to keep this simple, we won't split reducers, action types, and action creators into separate files. We're going to put everything in one.
+
+First we need some action types:
+
+```javascript
+const INCREMENT = 'INCREMENT'
+const DECREMENT = 'DECREMENT'
+const RESET = 'RESET'
+```
+
+Then we need an initial state:
+
+```javascript
+const initialState = {
+  counter: 0
+}
+```
+
+Then we need a reducer to handle the different action types (you may think that since we only have a single state value to hold, it seems like overkill to use an object and you are right! State can be a single variable, an array, or an object. If the state holds more than one value it will almost certainly be an object though, so we are overbuilding here to reflect typical use cases):
+
+```javascript
+const counterReducer = (state = initialState, action) => {
+  switch(action.type) {
+    case INCREMENT:
+      return Object.assign({}, state, {counter: state.counter + 1})
+    case DECREMENT:
+      return Object.assign({}, state, {counter: state.counter - 1})
+    case RESET:
+      return Object.assign({}, state, {counter: 0})
+    default:
+      return state
+  }
+}
+```
+
+Now we need to make action creators:
+
+```javascript
+const incrementCounter = () => ({
+  type: INCREMENT
+})
+const decrementCounter = () => ({
+  type: DECREMENT
+})
+const resetCounter = () => ({
+  type: RESET
+})
+```
+
+Now we need a store:
+
+```javascript
+const store = createStore(counterReducer)
+```
+
+Ok, we're ready to roll. Oh, right, we need a program to use this with! Let's make the absolute bare minimum (sorry CSS) program. We want it to have one display (the counter value) and three buttons (one for each action). We aren't going to use any fancy framework, we won't even create DOM nodes dynamically. We're just going to use Javascript to hook on to an existing element and innerHTML to rewrite it's value every time we get an update from the store. Like this:
+
+```html
+<div id="counter">0</div>
+```
+
+```javascript
+const counter = document.getElementById('counter')
+
+const updateCounter = () => {
+  const counterValue = store.getState().counter
+  counter.innerHTML = counterValue
+}
+
+store.subscribe(updateCounter)
+```
+
+We'll also need to make buttons that trigger those action creators we made earlier. Remember we need to pass the action creators to the dispatch function and call them to retrieve the action object:
+
+```html
+<button onClick="store.dispatch(incrementCounter())">Increment</button>
+<button onClick="store.dispatch(decrementCounter())">Decrement</button>
+<button onClick="store.dispatch(resetCounter())">Reset</button>
+```
+
+Let's put that all together (you may notice I use multiple <script></script> tags, it doesn't change anything about what we're doing, but we'll use that to represent what would normally be separate files):
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>A Basic counter using Redux</title>
+  </head>
+  <body>
+    <div id="counter">0</div>
+    <button onClick="store.dispatch(incrementCounter())">Increment</button>
+    <button onClick="store.dispatch(decrementCounter())">Decrement</button>
+    <button onClick="store.dispatch(resetCounter())">Reset</button>
+
+    <script>
+      function createStore(reducer, initialState) {
+        if(typeof reducer !== 'function') {
+          console.log('We expected the reducer to be a function. Try again!')
+          return
+        }
+
+        const initialAction = {
+          type: '@@redux@@reserved/INIT' + Math.random().toString().substring(7).split('').join('.')
+        }
+        let currentState = initialState
+        let currentReducer = reducer
+        let currentListeners = []
+        let nextListeners = currentListeners 
+        let isDispatching = false
+
+        // This is a private function, meaning we won't export (expose) it
+        function ensureCanMutateNextListeners() {
+          if(currentListeners === nextListeners) {
+            nextListeners = currentListeners.slice() 
+          }
+        }
+
+        function getState() { 
+          if(isDispatching) {
+            throw new Error('You can\'t call getState while the state is being changed')
+          } 
+          return currentState
+        }
+
+        function dispatch(action) {
+          if(typeof action !== 'object') {
+            throw new Error('Actions need to be a simple object.')
+          }
+
+          if(typeof action.type === 'undefined') {
+            throw new Error("Actions need to have a 'type' key with a value that is not undefined" )
+          }
+
+          if(isDispatching) {
+            throw new Error('You cannot dispatch an action from inside a reducer!')
+          }
+
+          try {
+            isDispatching = true
+            currentState = currentReducer(currentState, action)
+          }
+          finally {
+            isDispatching = false
+          }
+          
+          const listeners = currentListeners = nextListeners
+          for(let i = 0; i < listeners.length; i++) {
+            const listener = listeners[i]
+            listener()
+          }
+        }
+
+        function subscribe(listener) {
+          if(typeof listener !== 'function') {
+            throw new Error('Error. Expected listener to be a function')
+          }
+
+          if(isDispatching) {
+            throw new Error('You may not subscribe while an action is being dispatched to the reducer')
+          }
+
+          let isSubscribed = true
+          ensureCanMutateNextListeners()
+          nextListeners.push(listener)
+
+          return function unsubscribe() {
+            if(!isSubscribed) {
+              return
+            }
+
+            if(isDispatching) {
+              throw new Error('You can\'t call unsubscribe while the store is dispatching an action')
+            }
+
+            isSubscribed = false
+            ensureCanMutateNextListeners()
+            const index = nextListeners.indexOf(listener)
+            nextListeners.splice(index, 1)  
+          }
+        }
+
+        dispatch(initialAction)
+
+        return {
+          getState,
+          dispatch,
+          subscribe
+        }
+      }    
+    </script>
+    <script>
+      const INCREMENT = 'INCREMENT'
+      const DECREMENT = 'DECREMENT'
+      const RESET = 'RESET'
+    </script>
+    <script>
+      const initialState = {
+        counter: 0
+      }
+
+      const counterReducer = (state = initialState, action) => {
+        switch(action.type) {
+          case INCREMENT:
+            return Object.assign({}, state, {counter: state.counter + 1})
+          case DECREMENT:
+            return Object.assign({}, state, {counter: state.counter - 1})
+          case RESET:
+            return Object.assign({}, state, {counter: 0})
+          default:
+            return state
+        }
+      }
+    </script>
+    <script>
+      const incrementCounter = () => ({
+        type: INCREMENT
+      })
+      const decrementCounter = () => ({
+        type: DECREMENT
+      })
+      const resetCounter = () => ({
+        type: RESET
+      })    
+    </script>
+    <script>
+      const store = createStore(counterReducer)
+    </script>
+    <script>
+      const counter = document.getElementById('counter')
+
+      const updateCounter = () => {
+        const counterValue = store.getState().counter
+        counter.innerHTML = counterValue
+      }
+
+      store.subscribe(updateCounter)    
+    </script>
+  </body>
+</html>
+```
+
+Voila! If you copy the above code into a separate HTML file and run it, you should have a working program that uses our Redux redux for state management.
 
 
 
@@ -2213,3 +2639,5 @@ Up to now, we've been using console.log to notify when an error occurs. That can
 -Talk about separation for testing.
 -Talk about how reducers are actually not separate.
 -We can make the second phase about how it works with react (Provider/connect)
+-0our dispatch doesn't return the action
+--remove intiialstate and explain why

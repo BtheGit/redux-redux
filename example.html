@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>A Basic counter using Redux</title>
+  </head>
+  <body>
+    <div id="counter">0</div>
+      <button onClick="store.dispatch(incrementCounter())">Increment</button>
+      <button onClick="store.dispatch(decrementCounter())">Decrement</button>
+      <button onClick="store.dispatch(resetCounter())">Reset</button>
+    <script>
+      function createStore(reducer, initialState) {
+        if(typeof reducer !== 'function') {
+          console.log('We expected the reducer to be a function. Try again!')
+          return
+        }
+
+        const initialAction = {
+          type: '@@redux@@reserved/INIT' + Math.random().toString().substring(7).split('').join('.')
+        }
+        let currentState = initialState
+        let currentReducer = reducer
+        let currentListeners = []
+        let nextListeners = currentListeners 
+        let isDispatching = false
+
+        // This is a private function, meaning we won't export (expose) it
+        function ensureCanMutateNextListeners() {
+          if(currentListeners === nextListeners) {
+            nextListeners = currentListeners.slice() 
+          }
+        }
+
+        function getState() { 
+          if(isDispatching) {
+            throw new Error('You can\'t call getState while the state is being changed')
+          } 
+          return currentState
+        }
+
+        function dispatch(action) {
+          if(typeof action !== 'object') {
+            throw new Error('Actions need to be a simple object.')
+          }
+
+          if(typeof action.type === 'undefined') {
+            throw new Error("Actions need to have a 'type' key with a value that is not undefined" )
+          }
+
+          if(isDispatching) {
+            throw new Error('You cannot dispatch an action from inside a reducer!')
+          }
+
+          try {
+            isDispatching = true
+            currentState = currentReducer(currentState, action)
+          }
+          finally {
+            isDispatching = false
+          }
+          
+          const listeners = currentListeners = nextListeners
+          for(let i = 0; i < listeners.length; i++) {
+            const listener = listeners[i]
+            listener()
+          }
+        }
+
+        function subscribe(listener) {
+          if(typeof listener !== 'function') {
+            throw new Error('Error. Expected listener to be a function')
+          }
+
+          if(isDispatching) {
+            throw new Error('You may not subscribe while an action is being dispatched to the reducer')
+          }
+
+          let isSubscribed = true
+          ensureCanMutateNextListeners()
+          nextListeners.push(listener)
+
+          return function unsubscribe() {
+            if(!isSubscribed) {
+              return
+            }
+
+            if(isDispatching) {
+              throw new Error('You can\'t call unsubscribe while the store is dispatching an action')
+            }
+
+            isSubscribed = false
+            ensureCanMutateNextListeners()
+            const index = nextListeners.indexOf(listener)
+            nextListeners.splice(index, 1)  
+          }
+        }
+
+        dispatch(initialAction)
+
+        return {
+          getState,
+          dispatch,
+          subscribe
+        }
+      }    
+    </script>
+    <script>
+      const INCREMENT = 'INCREMENT'
+      const DECREMENT = 'DECREMENT'
+      const RESET = 'RESET'
+    </script>
+    <script>
+      const initialState = {
+        counter: 0
+      }
+
+      const counterReducer = (state = initialState, action) => {
+        switch(action.type) {
+          case INCREMENT:
+            return Object.assign({}, state, {counter: state.counter + 1})
+          case DECREMENT:
+            return Object.assign({}, state, {counter: state.counter - 1})
+          case RESET:
+            return Object.assign({}, state, {counter: 0})
+          default:
+            return state
+        }
+      }
+    </script>
+    <script>
+      const incrementCounter = () => ({
+        type: INCREMENT
+      })
+      const decrementCounter = () => ({
+        type: DECREMENT
+      })
+      const resetCounter = () => ({
+        type: RESET
+      })    
+    </script>
+    <script>
+      const store = createStore(counterReducer)
+    </script>
+    <script>
+      const counter = document.getElementById('counter')
+
+      const updateCounter = () => {
+        const counterValue = store.getState().counter
+        counter.innerHTML = counterValue
+      }
+
+      store.subscribe(updateCounter)    
+    </script>
+  </body>
+</html>
