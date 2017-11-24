@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <title>A Basic counter using Redux</title>
   </head>
@@ -24,7 +24,6 @@
         let nextListeners = currentListeners 
         let isDispatching = false
 
-        // This is a private function, meaning we won't export (expose) it
         function ensureCanMutateNextListeners() {
           if(currentListeners === nextListeners) {
             nextListeners = currentListeners.slice() 

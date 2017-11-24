@@ -1523,7 +1523,7 @@ function fullName(firstName) {
 }
 ```
 
-This kind of returning functions gets into more advanced topics like currying and composition which we won't be covering, but I was hoping to at least dispell some of the mystery of lines like this:
+This kind of returning functions gets into more advanced topics like currying and composition which we won't be covering in detail, but I was hoping to at least dispell some of the mystery of lines like this:
 
 ```javascript
 const iAmAScaryFunction = () => () => () => () => 'Scary'
@@ -2482,7 +2482,6 @@ Let's put that all together (you may notice I use multiple <script></script> tag
         let nextListeners = currentListeners 
         let isDispatching = false
 
-        // This is a private function, meaning we won't export (expose) it
         function ensureCanMutateNextListeners() {
           if(currentListeners === nextListeners) {
             nextListeners = currentListeners.slice() 
@@ -2615,11 +2614,124 @@ Let's put that all together (you may notice I use multiple <script></script> tag
 
 Voila! If you copy the above code into a separate HTML file and run it, you should have a working program that uses our Redux redux for state management.
 
+An important note to make is that our small example program is simply a demonstration of how to integrate Redux into a real project. We haven't done anything that takes advantage of Redux's particular strengths. For example, we could use our browser's local storage to store a copy of the state and pass that to createStore on future visits to save changes. We could also store a copy of each change to the reducer in an array and use that to 'time-travel' through our state by adding Fast Forward and Rewind buttons.
 
+## Appendix 1: What's missing?
 
+### Chapter 24: Overview
 
+If you take a look at the real Redux source code now, especially the createstore.js file, you might be happily surprised to realize it looks very, very familiar. In fact, hopefully, by this point the documentation has stoppped feeling overwhelming and started feeling incredibly obvious and sensible. However, you will still run into small differences between what we did and what Redux does. On thing you may notice is that dispatch() in Redux returns the original action it was passed. We never added that feature. It's not essential, but having functions return something on execution can offer more flexibility in how the external program that calls them is structured.
 
+You might also notice that the official Redux createStore has two more functions: replaceReducer and observable. ReplaceReducer does exactly what you might think, allowing us to swap out reducers after the store has been created. Observables are another type of programming pattern, similar to pub-sub, that some frameworks favor. If you looks closely though in Redux's case it is just a wrapper over the subscribe functionality we've already built.
 
+The much bigger change you may notice is that the Redux createStore handles a third argument, enhancer. This is one of the most important features of Redux that we have so far completely ignored. You'll also notice a bindActionCreators and a combineReducers module which we will touch on as well -- again, at this point, much of what's left to say is well covered in the source code and this guide may be a bit redundant.
+
+### Chapter 25: Enhancer, ApplyMiddleware, and Compose (Higher Order Functions, Currying, and Function Composition)
+
+The underlying value of the enhancer argument is that it lets you pass in custom functions which extend Redux (give it new, cool features). We touched on what this constitutes very briefly in chapter 14 when we mentioned composition and currying. 
+
+Composition is when you combine multiple functions together (effecively nesting them). Function a(), b(), and c() become a(b(c())). The result of c() is passed to b(), the result of which is passed to a(). 
+
+Currying is when you have a process that takes multiple arguments, but take them piece by piece. Instead of Taking all the arguments at once, you take some arguments and then return another function that takes the rest and returns a result. This means you can partially fill out the arguments and wait for more input before returning the result. 
+
+```javascript
+const add = (a,b) => a + b
+```
+
+becomes:
+
+```javascript
+const curriedAdd = a => b => a + b
+```
+
+That may look a little confusing, so let's go back to the old way of writing functions:
+
+```javascript
+function add(a,b) {
+  return a + b
+}
+```
+
+becomes 
+
+```javascript
+function curriedAdd(a) {
+  return function(b) {
+    return a + b
+  }
+}
+```
+
+To use the traditional add function we do:
+
+```javascript
+const result = add(10, 1)
+console.log(result) // 11
+```
+
+To use the curried version:
+
+```javascript
+const partiallyFilled = curriedAdd(10)
+console.log(partiallyFilled) // ƒ (b) { return a + b }
+const result = partiallyFilled(1)
+console.log(result) // 11
+```
+
+There's one more concept concept worth mentioning, Higher Order Functions. HOFs take a function and return a new function that extends the functionality of the original function. This is of course what we said the Redux enhancer did at the beginning of this chapter. Let's make a simple example. We'll take a basic add function which returns a result. But we'll 'wrap' it in a higher order function that gives us the result in the console as well (the wrapper is a higher order function):
+
+```javascript
+function add(a,b) {
+  const result = a + b
+  return result
+}
+
+function wrapper(func) {
+  return function(a, b) {
+    const result = func(a,b)
+    console.log(result)
+    return result
+  }
+}
+```
+
+To use that we do:
+
+```javascript
+const wrappedAdd = wrapper(add)
+```
+
+And now we can use wrappedAdd to both get the results of the original function as intended and log it to the console at the same time.
+
+You may notice our wrapper function is built to expect the function it is wrapping to have two arguments, 'a' and 'b'. This makes it pretty inflexible. Instead we can capture all of the arguments (no matter how many there are) and pass them to our wrapped function without ever having to know how many or what they are. There are a few ways to do this in Javascript. Typically you either see people use the 'arguments' keyword which is a secret feature of any function. It is like an array (but not quite) and it holds all the arguments in an array, you don't have to make it yourself. 
+
+The other way that is more common these days because it is more flexible (though we won't take advantage of that aspect right now) is to use a spread operator. We saw this much earlier as one way of cloning arrays and objects. Here it will first gather all the arguments a function gets into an array, and then when we use it again it will spread those back out, just like we found them, in the new array we return:
+
+```javascript
+function wrapper(func) {
+  return function(...args) {
+    const result = func(...args)
+    console.log(result)
+    return result
+  }
+}
+```
+
+And now we have a generic higher order function that can take any function that returns something and log it to the console. Pretty cool, right!
+
+That's what the enhancer argument is. It's an unknown higher order function. We give it our createStore function. It does something to make it even more awesome and then passes it back. We immediately call the new and improved createStore function with the original reducer and state arguments it was first called with. That's what this line means:
+
+```javascript
+return enhancer(createStore)(reducer, preloadedState)
+```
+
+The problem with this is that it only let's use use one higher order function. That's not so awesome. There are all kinds of cool enhancements we could add in the middle of receiving the first arguments and returning the final result. Like so originalFunction -> enhancer -> enhancer -> enhancer -> finalModifiedFunction. Those middle enhancer are called middleware in programming. Functions or programs that take an input and pass on the modified result to the next function in a chain. 
+
+Because createStore can only accept one enhancer, in order to have multiple higher order functions we need to somehow combine them into one. Remember function composition? That's what applyMiddleware is. It's a higher order function that takes any number of other HOFs and returns a new higher order function that takes createStore as an argument. That new function is the enhancer function we already looked at above. The new enhancer function is run and calls createStore to create a store as normal. However, instead of just giving it back to us like usual, first it creates a new version of the dispatch function (this is the only function that Redux allows middleware to be applied to), that new version of dispatch is then wrapped with all the middleware functions, one after the other (this is composition and it's what the Redux 'comopose' function is for). Finally, the original store object (with getState, subscribe, etc.) is returned with the new modified dispatch function.
+
+Middleware is powerful and let's us add all kinds of new functionality to our store. There are all kinds of enhancements we could use but by far the most common type is something to handle asynchronous behavior. Let's cover that briefly.
+
+### Chapter 26: Thunks (Async)
 
 <!-- Now, we've talked a lot about time travel debugging as one of the reasons Redux is so popular (it's also the reason it was originally created) but we haven't really seen what that looks like. We're not going to build that functionality out, but if you want to think about what the simplest version would entail, you might realize it's pretty simple. Every time we dispatch an action, we get back the new state. So far we are replacing the same variable over and over again which is erasing our history. But what if we stored those copies in an array as well? Then we could go back and forth all day loading different copies into currentState. Unfortunately, that's out of scope for us now. Instead we're going to move on to part two. Actions. -->
 
