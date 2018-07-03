@@ -7,15 +7,15 @@ And then you hit the inevitable wall of jargon, endless files, and boilerplate.
 
 Does it really take 5 files to deal with one variable?? 
 
-The simple answer is no. It doesn't. Redux is an amazing tool in large part because it is so simple. That simplicity also allows a great deal of flexibility in how it's structured and used. That flexibility means a lot of time has gone into finding the best way among many of doing things (best practices). And those best practices means sometimes it can be very hard as a beginner to see the forest for the trees. Our goal today is to build a simplified version of redux in the most ELI5 way we can, one step at a time. 
+The simple answer is no. It doesn't. Redux is an amazing tool in large part because it is so simple. That simplicity also allows a great deal of flexibility in how it's structured and used. That flexibility means a lot of time has gone into finding the best way among many of doing things (best practices). And those best practices means sometimes it can be very hard as a beginner to see the forest for the trees. Our goal today is to rebuild the core functionality of redux in the most ELI5 way we can, one step at a time (iteratively).
 
-Along the way we'll explore a lot of important Javascript concepts that might feel a bit confusing as a relative beginner and, similarly, aren't really all that difficult at all. Large sections of this guide will look at these general concepts and talk with the expectation that even if you've learnt them, they may still feel a little unclear. 
+Along the way we'll explore a lot of important Javascript concepts that might feel a bit confusing as a relative beginner and, similar to Redux, aren't really all that difficult at all. Large sections of this guide will look at these general concepts and talk with the expectation that even if you've learnt them, they may still feel a little unclear. Feel free to gloss over large portions if they feel too reductive.
 
 By the end, we will hopefully have a clearer grasp of some of the most useful Javascript rules and patterns and, at the same time, a better understanding of Redux (and why implementing it in small scale projects isn't entirely a waste of time and effort).
 
-I should mention that we aren't really going to talk about React in this guide. Redux is used with it most commonly, but Redux is really just a vanilla Javascript library and can be used anywhere. 'react-redux' is a library that is built to connect React components with the Redux library. After we have a strong command of Redux it will be a lot easier to see what is happening in react-redux, but we won't build that library from scratch as well, we'll just touch on it at the end to feel like we know what is going on underneath the hood.
+I should mention that this is not a tutorial that will spend much time talking about React. Redux is used with it most commonly, but Redux is really just a vanilla Javascript library and can be used anywhere. React-Redux, however, is a library that is built to mae using Redux in React a lot easier. After we have a strong command of Redux it will be a lot easier to see what is happening in React-Redux, but we won't build that library from scratch as well, we'll just touch on it at the end to feel like we know what is going on underneath the hood (spolier alert: it's mostly about React Context (which has gotten a lot easier to work with since React 16.3)).
 
-Finally, I would to also say, in no uncertain terms, that this guide is by no means written to cast aspersions on the documentation that surrounds Redux itself. Not only is the Redux source code clear and elegant, the creators have done an amazing job explaining and documenting their work. There is an excellent series on Egghead by Dan Abramov that introduces the library by rebuilding it from scratch, much like we are doing today. This guide is ust aimed at people who may be still coming to grips with Javascript itself. Exposure to Redux is happening sooner and sooner for new developers and this is written with those coders in mind.
+Finally, I would to also say, in no uncertain terms, that this guide is by no means written to cast aspersions on the documentation that surrounds Redux itself. Not only is the Redux source code clear and elegant, the creators have done an amazing job explaining and documenting their work. There is an excellent series on Egghead by Dan Abramov that introduces the library by rebuilding it from scratch, much like we are doing today. This guide is just a bit more geared towars people who may be still coming to grips with the Javascript language itself. Exposure to Redux is happening sooner and sooner for new developers and this is written with those coders in mind.
 
 Without further ado, let's get started! 
 
@@ -23,9 +23,9 @@ Without further ado, let's get started!
 
 ### Chapter 0: We begin at the beginning
 
-We're going to start by working with the simplest of functions and only a few pieces of state. I'm of the strong opinion that for novices learning best practices first is counterproductive. Hopefully the concepts you learn today will help you understand why the official Redux sourcecode was written the way it was as we slowly build towards it iteratively. 
+We're going to start by working with the simplest of functions and only a few pieces of state. I'm of the strong opinion that for novices learning best practices first is counterproductive. It's impossible to understand why an approach is 'best' until you've seen a version that clearly has deficiencies. Hopefully the concepts you learn today will help you understand why the official Redux sourcecode was written the way it was as we slowly build towards it.
 
-We'll start simple and improve as we go. A few variables (our program's state) and a few functions that read and change them (our getters and setters respectively):
+We'll start simple and improve as we go, just a few variables (our program's state) and a few functions that read and change them (our getters and setters respectively):
 
 ```javascript
 let mood = 'Happy'
@@ -62,7 +62,7 @@ showChildren() // 5
 
 ### Chapter 1: Gathering up state into one place
 
-Not everything we are going to do as we build our simplified version of Redux is going to seem essential. But hopefully it always seems clear. For the next step, we are going to collect all of our state into an object. Like good housekeeping, we're going to hide all of those global variables so they don't create a mess (global just means anything can access them - it doesn't necessarily seem like such a bad idea, it's certainly more convenient. But what happens when more than one thing has the same name? Either your program starts doing weird stuff or telling bad puns. Or both):
+Not everything we are going to do as we build our simplified version of Redux is going to seem essential. But hopefully it always seems clear. For the next step, we are going to collect all of our state into an object. Like good housekeeping, we're going to hide all of those global variables so they don't create a mess (global just means anything, anywhere in the program can access them - it doesn't necessarily seem like such a bad idea, it's certainly more convenient. But what happens when more than one thing has the same name? Either your program starts doing weird stuff or telling bad puns. Or both):
 
 ```javascript
 let ourState = {
@@ -85,50 +85,32 @@ function addChild(newChild) {
 
 ### Chapter 2: Let's start making an interface
 
-Now that we have our state (variables) in one place, we can get even fancier. Instead of directly changing (setting) our state, let's just tell our state to change itself. Why? Well, we'll do it if for no other reason than to not have to worry about how it happens. Our functions right now are simple, but if we made it a bit more complicated we would want to add in extra checks to make sure we couldn't do things like this:
-
-```javascript
-addChild(0.7734)
-```
-
-When we make the state object responsible for these things it keeps our other functions simple (these other functions represent external programs using the state management library we're building). The idea being that if more than one function needs to use the same state, why repeat all that extra work? Let the state handle itself.
-
-For example, let's say we want to make sure a newMood is a string. We would do something like this:
-
-```javascript
-function changeMood(newMood) {
-  if(typeof newMood === 'string') {
-    ourState.mood = newMood
-  }
-}
-```
-If we had to repeat that 'if' check every time we wanted to change the state it would get very tedious. Moving the check into the object itself where the state will be touched means we don't have to repeat ourselves.
-
-NB: The key part of this chapter is remembering that objects in javascript can have all kinds of things in them. Most importantly, they can have functions in addition to variables. So that's how we'll make our built in ways to interact with it (interface/API), we'll add functions into our state object.
+Now that we have our state (variables) in one place, why not do the same with the functions we use to interact with it? By moving our getters and setters inside the the state we now have everything in one place.
 
 ```javascript
 let ourState = {
   mood: 'Happy',
   children: ['Bobby', 'Billy', 'Betty', 'Bobo'],
-  changeMood: function(newMood) { 
-    if(typeof newMood === 'string') {
-      ourState.mood = newMood
-    }
+  showMood: function() {
+    console.log(this.mood)
   },
-  addChild: function(newChild) { this.children.push(newChild)} 
+  changeMood: function(newMood){
+    this.mood = newMood;
+  },
+  addChild: function(newChild) {
+    this.children.push(newChild)
+  }
 }
 ```
 
-The 'this' keyword in Javascript is considered a tricky thing to understand. But for our purposes here, it should suffice to know that it is pointing at the 'ourState' object (which means using 'this.mood' is like saying 'ourState.mood' but from inside 'ourState').
+You'll notice that we've just introduced the dreaded javascript 'this'. 'this' is notorious for tripping up coders and introducing all kinds of bugs. For our sake, what's important to understand is that when 'this' is used inside a function, it points to the object/{} that the function is inside of. so, showMood is a function inside of the ourState object. That means 'this' in showMood is the same as saying 'ourState', so this.mood === ourState.mood.
 
-So now, to change our state, we have to do things a bit differently:
+So now, to change our state, we do things a bit differently:
 
 Instead of directly changing the state:
 
 ```javascript
-if(typeof newMood === 'string') {
-  ourState.mood = newMood
-}
+ourState.mood = 'Sad'
 ```
 
 We tell the state to change itself (but we don't worry about how):
@@ -137,34 +119,73 @@ We tell the state to change itself (but we don't worry about how):
 ourState.changeMood('Sad')
 ```
 
+This doesn't seem like a big change, but it introduces encapsulation or separation of concerns. The larger program no longer has to worry about what's happening inside of the state object which, as we progress, will more and more come to resemble it's own little mini-program (i.e. a library). What's great about this is, the outer program can always use the same interface (group of methods like getters and setters) to talk to the inner program (this is what's called an API) even if the inner program gets a lot more complex. So, let's take advantage of this and add in our first bit of complexity to the setter function changeMood: type validation. We'll keep it simple, we know that a mood should be a word which is a string in programming terms. We wouldn't want this:
+
+```javascript
+changeMood(0.7734)
+```
+We won't worry beyond making sure the new mood the setter is being asked to use is in fact a string. Like so: 
+
+```javascript
+function changeMood(newMood) {
+  if(typeof newMood === 'string') {
+    ourState.mood = newMood
+  }
+}
+```
+
+From now on, we can handle all the validating (checking to make sure stuff is what it's supposed to be) inside of the state library, which means our outer program is free to focus on it's own problems (and if it's anything like most programs, there will be plenty and half of them will involve missing commas). So now we have:
+
+```javascript
+let ourState = {
+  mood: 'Happy',
+  children: ['Bobby', 'Billy', 'Betty', 'Bobo'],
+  showMood: function() {
+    console.log(this.mood)
+  },
+  changeMood: function(newMood) { 
+    if(typeof newMood === 'string') {
+      ourState.mood = newMood
+    }
+  },
+  addChild: function(newChild) { 
+    this.children.push(newChild)
+  } 
+}
+```
+
 ### Chapter 3: The plot thickens
 
-If it feels like we're covering a lot of basic ground tediously, it's because we are. The idea is that by the end of the process it will seem downright simplistic. For the most part, the how of Redux is simplistic, it's the why and the syntax that tends to leave beginners a little unsure.
+If it feels like we're covering a lot of basic ground tediously, it's because we are. The idea is that by the end of the process it will seem downright simplistic. For the most part, the how of Redux is simplistic, it's the why and the syntax that tends to leave beginners confused.
 
-On a side-note, since we won't build anything that takes advantage of some of the coolest benefits of Redux, such as time-travel debugging, we should at least take a brief moment to mention about them. Time-travel debugging for instance sounds really crazy but it's really only time travel in the way that rewind and fast-forward on a VHS player are time travel. Sadly, you can put away your sports almanac now.
+> On a side-note, since we won't build anything that takes advantage of some of the coolest benefits of Redux, such as time-travel debugging, we should at least take a brief moment to mention about them. Time-travel debugging for instance sounds really crazy but it's really only time travel in the way that rewind and fast-forward on a VHS player are time travel. Sadly, you can put away your sports almanacs now.
+>
+> One of the biggest advantages of Redux is being able to see a perfect record of how changes are made to your state. Redux never actually changes anything directly, it gets instructions about what to change, and then creates new versions of our state based on those instructions. This gives us the potential to save a history of those instructions and versions of the state. So we could browse through all the state changes in the order they occured when something goes wrong (time-travel debugging). 
+>
+> Constantly creating new copies of the state and pretending they are the same thing also helps get us closer to avoiding another problem, race conditions. Note, this is race in the sense of the tortoise and the hare. The basic gist is that when you have two or more things going on in your program that will eventually have an effect on the same thing (such as a piece of state/variable) it can create unpredictability if you don't know which will finish first. In other words, when the order of things happening matters but you can't guarantee what order they will happen in you have race conditions. Sometimes it's not important and sometimes one instruction is 'jump out a plane' and the other is 'put on a parachute' and the order really, really matters!
+>
+> When you have two actions in redux they never actually change the same thing, one action will create a new, altered copy of the state and the second action will create a copy of that state. It doesn't solve the problems with the order of actions, but it means two things aren't trying to change the same thing at the exact same time. And it means we can actually go back and see what the order is if we weren't sure (time travel debugging again). It's not as exciting as a real Delorean but it definitely can be helpful.
 
-One of the biggest advantages of Redux is being able to see a perfect record of how changes are made to your state. Redux never actually changes anything directly, it gets instructions about what to change, and then creates new versions of our state based on those instructions. This gives us the potential to save a history of those instructions and versions of the state just like a web browser might when you are wasting too much time on Reddit. So we could browse through all the state changes in the order they occured when something goes wrong (time-travel debugging). 
+At this point in our program we have a state object that is a random assortment of variables and functions. It might make sense to bundle all that state together into it's own object just like we did before.
 
-Constantly creating new copies of the state and pretending they are the same thing also helps get us closer to avoiding another problem, race conditions. This is race in the sense of the tortoise and the hare, not in the sense of identity. The basic gist is that when you have two or more things going on in your program that will eventually have an effect on the same thing (such as a piece of state/variable) it can create unpredictability. In other words, when the order of things happening matters but you can't guarantee what order they will happen in you have race conditions. Sometimes it's not important and sometimes one instruction is 'jump out a plane' and the other is 'put on a parachute' and the order really, really matters!
+From:
 
-When you have two actions in redux they never actually change the same thing, one action will create a new, altered copy of the state and the second action will create a copy of that state. It doesn't solve the problems with the order of actions, but it means two things aren't trying to change the same thing at the exact same time. And it means we can actually go back and see what the order is if we weren't sure (time travel debugging again). It's not as exciting as a real Delorean but it definitely can be helpful.
+```javascript
+let ourState = {
+  mood: 'Happy',
+  children: ['Bobby', 'Billy', 'Betty', 'Bobo'],
+  ...
+}
+```
 
-At this point in our program we have a state object that is a random assortment of variables and functions. It might make sense to bundle all that state together into it's own object just like we did before. 
-
+To:
 ```javascript
 let ourState = {
   state: {
     mood: 'Happy',
     children: ['Bobby', 'Billy', 'Betty', 'Bobo']
   },
-  changeMood: function(newMood) { 
-    if(typeof newMood === 'string') {
-      this.mood = newMood
-    }
-  },
-  addChild: function(newChild) { 
-    this.children.push(newChild)
-  } 
+  ...
 }
 ```
 
@@ -330,7 +351,7 @@ let ourStore = {
 }
 ```
 
-You might notice that I added actionType as the first argument instead of the third. That's because we don't always need an itemValue (for example when we delete something), and obviously our new changeState function needs an actionType to work correctly. Some actions might not even need a second argument (itemType) if, for instance, all they do is delete everything, or change everything etc. Each action might end up needing different types of keys and values. If we hardcode the arguments our changeState function needs, it might get very tricky. So let's make it more flexible. Instead of passing in separate arguments, we can wrap all of the options into an object. That means our changeState doesn't really need to care about the order of arguments or which ones we give it -- only the if{} block needs to care. Well, with one big exception. The whole thing breaks if we forget to specify the action type. So we should probably do a check to make sure our new action object has a type key first. We should also check if the action argument is an object, and if it exists in the first place.
+You might notice that I added actionType as the first argument instead of the third. That's because we don't always need an itemValue (when we delete something, for example), and obviously our new changeState function needs an actionType to work correctly. Some actions might not even need a second argument (itemType) if, for instance, all they do is delete everything, or change everything etc. Each action might end up needing different types of keys and values. If we hardcode the arguments our changeState function needs, it might get very tricky. So let's make it more flexible. Instead of passing in separate arguments, we can wrap all of the options into an object. That means our changeState doesn't really need to care about the order of arguments or which ones we give it -- only the IF block needs to care. Well...with one big exception: The whole thing breaks if we forget to specify the action type. We should probably do a check to make sure our new action object has a type key first. We should also check if the action argument is an object (and if it even exists in the first place!)
 
 We'll do one more thing to be dry. Instead of always looking up the action.type, we'll save it in a string (this makes things a bit clearer and saves a bit of typing when there are a lot of actions -- not so much in our example case).
 
@@ -345,7 +366,7 @@ let ourStore = {
   },
   getState: function() { return this.state },
   changeState: function(action) {
-    // Remember, 'return' here will stop the rest of the function from running.
+    // Remember, 'return' in one of these IF blocks will stop the rest of the function from running. These are called guard clauses because they allow for an early exit and protect the rest of the function from running with incompatible data.
 
     if(typeof action !== 'object') {
       return
@@ -378,11 +399,13 @@ let ourStore = {
 }
 ```
 
+> Before we go any further, if you are asking yourselves how we validate new input (like making sure a new mood is a string), then you have been paying attention! As it stands, we no longer do that in the API since it no longer knows what types of state it is adding/replacing/deleting - it is now an agnostic API. When we have built it up a bit further we'll start to see likely places to put this kind of validation again. If you wanted to stop here and use this store object in a real program, you'd simply have to move that validation back into the outer program before it called ourStore.changeState().
+
 ### Chapter 6: A new complication makes things easier
 
-We talked earlier about race conditions. When we can't predict the order of actions. That means we also can't predict the state that the actions act on. So there are a few things that we should consider doing to make changeState() more predictable. 
+Earlier we touched briefly on race conditions. When problems are caused because we can't predict the order of actions (which means we also can't predict the state that the actions act on). So there are a few things that we should consider doing to make changeState() more predictable. 
 
-Let's focus on all those action checks first. Right now we are receiving action objects directly into the same function that is changing the state. What if we created a separate function that was responsible for processing actions? Then we could handle all the validity checks and other stuff (like saving a log of actions for time travel debugging) in one place and just focus on changing state in another place.
+Let's focus on all those action checks first. Right now we are receiving action objects directly into the same function that is changing the state. What if we created a separate function that was responsible for processing actions? Then we could handle all the action validition checks and other stuff (like saving a log of actions for time travel debugging) in one place and just focus on changing state in another place.
 
 ```javascript
 let ourStore = {
@@ -430,7 +453,7 @@ let ourStore = {
 }
 ```
 
-This does seem to complicate things unnecessarily. But setting up a gatekeeper like this, gives us a great place to do things related to actions that isn't just specifically changing the state. Later on we'll add in a log of actions. But for now we will focus on another problem. What happens if the changeState() is fired more than once from the same receiveActionAndSendActionToChangeState? Remember, we don't want to have that kind of unpredictability. What would cause that to happen? Well, one issue could be if someone tried to send another action from inside of the first one. So we should definitely make sure only one changeState() can fire at a time from one receiveActionAndSendActionToChangeState call. How do we do that though? If you're imagining it comes down to some fancy, advanced programming techniques, you might be surprised. Often the most important programming acronym of all is KISS, keep it simple, silly! We're just going to use a simple boolean, to tell us if the function is already running. Something like this:
+At first glance this does seem to complicate things unnecessarily. But setting up a gatekeeper like this, gives us a great place to do things related to actions that isn't just specifically changing the state. Later on we'll add in a log of actions. But for now we will focus on another problem. What happens if the changeState() is fired more than once from the same receiveActionAndSendActionToChangeState? Remember, we don't want to have that kind of unpredictability. What would cause that to happen? Well, one issue could be if someone tried to send another action from inside of the first one. So we should definitely make sure only one changeState() can fire at a time from one receiveActionAndSendActionToChangeState call. How do we do that though? If you're imagining it comes down to some fancy, advanced programming techniques, you might be surprised. Often the most important programming acronym of all is KISS, keep it simple, ~~stupid~~ silly! We're just going to use a simple boolean, to tell us if the function is already running. Something like this:
 
 ```javascript
 receiveActionAndSendActionToChangeState: function(action) {
@@ -446,7 +469,7 @@ receiveActionAndSendActionToChangeState: function(action) {
 }
 ```
 
-Now you may notice two things about the above code. First of all, as long as changeState isn't resolved we won't be able to fire another one. That means we don't have to worry about someone nesting changeState calls. The second thing you might notice is that we referenced a variable isChangingState that we never declared. That doesn't work of course, but where should we declare it? Well, it can't be inside this function because then if the function gets called twice we also get two instances of isChangingState which negates the purpose of only having one. So we'll have to store it outside the function, so even if the function is called multiple times at once, each instance of the function points at the same isChangingState.
+Now you may notice two things about the above code. First of all, as long as changeState hasn't resolved (finished running) we won't be able to fire another one. That means we don't have to worry about someone nesting changeState calls. The second thing you might notice is that we referenced a variable isChangingState that we never declared. That doesn't work of course, but where should we declare it? Well, it can't be inside this function because then if the function gets called twice we also get two instances of isChangingState which negates the purpose of only having one. So we'll have to store it outside the function, so even if the function is called multiple times, each instance of the function points at the same isChangingState instead of it's own local version.
 
 ```javascript
 {
@@ -466,7 +489,7 @@ Now you may notice two things about the above code. First of all, as long as cha
 }
 ```
 
-There's another benefit to storing isChangingState externally, we can use it with other functions to see what is happening inside receiveActionAndSendActionToChangeState at any one time and make decisions based on that. Right now we don't want to have attempts to change state happen while the state is actively changing. It creates unpredictability that we are working hard to avoid. To that same end we should also prohibit users from trying to get state while the state is actively changing as well. So let's use the same isChangingState to make sure we can only getState when the coast is clear:
+There's another benefit to storing isChangingState externally, we can use it with other functions to see what is happening inside receiveActionAndSendActionToChangeState at any time and make decisions based on that. Right now we don't want to have attempts to change state happen while the state is actively changing. It creates unpredictability that we are working hard to avoid. To that same end we should also prohibit users from trying to get state while the state is actively changing as well. So let's use the same isChangingState to make sure we can only getState when the coast is clear:
 
 ```javascript
 getState: function() {
@@ -509,7 +532,7 @@ ourStore.state = {}
 delete ourStore.state[itemType]
 ```
 
-Now, that doesn't seem like very good housekeeping. So how can we protect our state from prying eyes and fingers? How can we still have access to the variables, but only using the functions we created (getState, changeState)? If you think the answer isn't a closure, than I probably need to work on my chapter titles a bit more! So, how can we do that? Let's refactor our store object into a store function (just like the container function in our example above). We don't want to return direct access to the state, but we do want to return direct access to the functions which outside programs will need access to in order to perform authorized (by us) actions on the state. Unlike the closure demo above, we will need to pass access to more than one function. So, instead of return an inside function from the container function, we'll return an object that contains multiple inside functions. Like so:
+Now, that doesn't seem like very good housekeeping. So how can we protect our state from prying eyes and fingers? How can we still have access to the variables, but only using the functions we created (getState, changeState)? If you don't think the answer is a closure, than I probably need to work on my chapter titles a bit more! So, how can we do that? Let's refactor our store object into a store function (just like the container function in our example above). We don't want to return direct access to the state, but we do want to return direct access to the functions which outside programs will need access to in order to perform authorized (by us) actions on the state (this is the API). Unlike the closure demo above, we will need to pass access to more than one function. So, instead of returning a single inside function from the container function, we'll return an object that contains multiple inside functions. Like so:
 
 ```javascript
 function ourStore() {
@@ -655,17 +678,19 @@ function createStore() {
 }
 ```
 
+It's starting to look a lot like Redux!
+
 ### Chapter 8: Teenage Mutant Ninja Functions!
 
 Way back in chapter 3 we spent a few minutes talking about some of the features of Redux, like copying state rather than changing it directly and time-travel debugging, and then we completely ignored them until now. 
 
-So let's talk about mutability. First of all, that doesn't mean being able to suddenly turn off the sound. Mutability is about whether something is able to change or not. Now this may seem confusing because it's rather obvious that things have to change inside of a program in order for anything to work. The real question is how to change things. Do we tinker around with the thing itself or do we create a copy of the thing, take it to the side, change it, and then replace the original thing with the changed copy? The first way is mutable, the second is what we call immutable. Instead of changing things we keep creating new copies of the things and replacing the old ones. That's pretty much it.
+So let's take a moment to talk about mutability. First of all, that doesn't mean being able to suddenly kill the sound. Mutability is about whether something is able to change or not (in the sense of mutate, not mute). Now this may seem confusing to care about because it's rather obvious that things have to change inside of a program in order for anything to work. But the real question is how to change things. Do we tinker around with the thing itself or do we create a copy of the thing, take it to the side, change it, and then replace the original thing with the changed copy? The first way is mutable, the second is what we call immutable. Instead of changing things we keep creating new copies of the things and replacing the old ones. That's pretty much it.
 
-So why go through all the trouble instead of just changing something directly? Well, part of it is to be cool obviously. But it also helps us with another problem we touched on earlier, unpredictability and race conditions. Think about it like this. We have one piece of state and two functions. Each function does something to the state and both start running at the same time. But maybe one function changes the state in a way that breaks the other function. That's no good. Instead, we can create a separate copy of the state and pass it to each function. They can do whatever they want to the state without breaking the other function. At the end we get the changed copies back and replace the original with those. Now, you may notice it doesn't necessarily solve the problem of the order of replacing the original state at the end (this is where you start running into 'async', i.e. things that take an unpredictable amount of time to complete), but it does solve the problem of a function breaking halfway through running because some unknown outside function messed with the state it was working on.
+So why go through all that trouble instead of just changing something directly? Well, part of it is to be cool obviously (we are in the era of bespoke everything). But it also helps us with another problem we touched on earlier, unpredictability. If one part of the program is looking at the current state of the store while another part is changing it then all kinds of craziness can happen.
 
-So, how can we take this idea and use it in our own store? Well, first of all, we only have to worry about the function that actually changes the state. Our dispatch is only a messenger (and we've already made sure it can't have nested calls (dispatches inside of dispatches)). However, we haven't done anything to handle multiple dispatch calls from the outside at the same time. That means our changeState function might have the same problem we described in the paragraph above. Let's fix that. Instead of changeState directly changing (mutating) our state, let's give it a copy of the state and then receive a copy back and replace the original state. Now, where should we put all this logic? In our gatekeeping dispatch function of course!
+So, how can we take this idea of immutability and use it in our own store? Instead of changeState directly changing (mutating) our state, let's give it a copy of the state and then receive a copy back and replace the original state. Now, where should we put all this logic? In our gatekeeping dispatch function of course!
 
-To do this, we have to make a few changes. Dispatch will have to provide the state explicitly to our changeState, changeState will have to return new state instead of directly changing the original state object, and dispatch will have to receive that new state and replace the original state with it. We should also avoid some confusion resuing the word 'state' everywhere. Let's call our current state, before it goes through changeState, currentState instead.
+To do this, we have to make a few changes. Dispatch will have to provide the state explicitly to our changeState, changeState will have to return new state instead of directly changing the original state object, and dispatch will have to receive that new state and replace the original state with it. We should also avoid some confusion resuing the word 'state' everywhere. Let's call our current state, before it goes through changeState, 'currentState' instead.
 
 There's one more thing we can do here. We've had an empty 'else' block for a long time. It stood for cases where nothing would change. So now, to have the same effect, we'll just return the original state unchanged (remember, our new changeState has to return something!):
 
@@ -746,9 +771,9 @@ function createStore() {
 
 Now, if you try and use the store we made above, it works. But, and this is a big but, it doesn't actually work the way we want it to.
 
-Remember how we talked about creating a copy of the state that wouldn't be directly connected to the original state? Well, even though we thought we did, we actually were still changing the original state directly. This brings us into another fundamental programming concept, passing by value vs passing by reference. That basically means when you create a copy of something (either directly or by passing something into a function which automatically creates internal copies of whatever it gets), sometimes you get an entirely new copy and sometimes you actually just get a reference to the original thing (if you've ever heard of pointers and how scary they are and that's why you should stay away from the language 'C', well, funny thing, Javascript has pointers too. And they aren't scary at all).
+Remember how we talked about creating a copy of the state that wouldn't be directly connected to the original state? Well, even though we thought we did, we actually were still changing the original state directly. This brings us into another fundamental programming concept, passing by value vs passing by reference. That basically means when you create a copy of something (either directly or by passing something into a function which automatically creates internal copies of whatever it gets), sometimes you get an entirely new copy and sometimes you actually just get a reference to the original thing (if you've ever heard of pointers and how scary they are and that's why you should stay away from the language 'C', well, funny thing, this is very similar (pointers just point at a location where some value is instead of actually representing the value itself like a normal variable would - this is very similar to a reference in Javascript)).
 
-How can you know if you're creating a new copy or just a new reference to the original thing? Well, it's pretty simple in Javascript. You can tell by what type of thing you are copying. Strings, numbers, booleans just get copied. Anything you do to the new copies doesn't affect the old ones. Objects {} and arrays [] are where it behaves differently. 
+How can you know if you're creating a new copy or just a new reference to the original thing? Well, it's pretty simple in Javascript. You can tell by what type of thing you are copying. Strings, numbers, booleans just get copied. Anything you do to the new copies doesn't affect the old ones. Objects {} and arrays [] (and functions()) are where it behaves differently. (Side note to confuse you, in Javascript arrays and functions are also objects!)
 
 Unlike the other types of variables, objects and arrays are containers of variables. So when you create an object like this:
 
@@ -779,7 +804,7 @@ let newObject = Object.assign({}, oldObject)
 let newObject = {...oldObject}
 ```
 
-Now, you may notice that the second way looks a lot like the 'spread operator' from the third array copy method, and it is. But there's a problem, it's very new, and that means not every browser knows what it means. It's basically a proposed way of doing something, but it's not a standard yet. To make sure it works everywhere it has to be translated back to standard Javascript. If you're trying to use Redux with React than you're probably already using Babel with Webpack to translate your awesome new Javascript into old boring Javascript that works everywhere (especially if you're using create-react-app). And when you look up other tutorials about Redux, you'll probably see this a lot:
+Now, you may notice that the second way looks a lot like the 'spread operator' from the third array copy method, and it is. But there's a problem, it's very new, and that means not every browser knows what it means. It's basically a proposed way of doing something, but it's not a standard yet. To make sure it works everywhere it has to be translated (transpiled) back to standard Javascript. If you're trying to use Redux with React than you're probably already using Babel with Webpack to transpile your awesome new Javascript into old boring Javascript that works everywhere (especially if you're using create-react-app). And when you look up other tutorials about Redux, you'll probably see this a lot:
 
 ```javascript
 return {
@@ -788,7 +813,7 @@ return {
 }
 ```
 
-But we don't want to complicate things. And Redux doesn't need to be used with React. So we're going to Keep It Simple and use the first method instead.
+But we don't want to complicate things. And Redux doesn't need to be used with React. So we're going to KISS and use the first method instead  which has wider browser support.
 
 ```javascript
 let newObject = Object.assign({}, oldObject)
@@ -818,11 +843,11 @@ let newObject = Object.assign({}, oldObject, newStuff)
 console.log(newObject) // {name: 'Brendan', age: 35, hair: false}
 ```
 
-Remember to make sure to pass in an object where newStuff is, not just any type of variable.
+Remember to make sure to pass in an object where the argument 'newStuff' is above, not just any type of variable.
 
 The bad:
 
-Here's the thing, remember how we said that copying objects simply doesn't actually copy them? Well, just because we are using Object.assign, we're not completely out of the woods. What happens when our object contains objects (or arrays)? Well, all magic that Object.assign performs only applies to the container object that we pass it. When it actually starts copying the stuff inside over it uses the simple method again. That means our outside container ight be unique, but any containers inside of it will point to the same place as the containers inside of other copies of the outside container. Ugh. Let's see what this means:
+Here's the thing, remember how we said that copying objects simply doesn't actually copy them? Well, just because we are using Object.assign, we're not completely out of the woods. What happens when our object contains objects (or arrays)? Well, all the magic that Object.assign performs only applies to the container object that we pass it. When it actually starts copying the stuff inside over it uses the simple method again. That means our outside container might be unique, but any containers inside of it will point to the same place as the containers inside of other copies of the outside container. Ugh. Let's see how this looks in practice:
 
 ```javascript
 let oldObject = {
@@ -864,7 +889,7 @@ console.log(copy2.favorites) // {food: 'Cheesecake', color: 'Purple'}
 That's because both inner objects are just addresses pointing at a container holding their values, the same container. 
 
 
-This isn't ideal. This is what shallow copying is. Everything at the top level is a unique copy (in this case our outer container object 'oldObject'), but everything deeper (nested) is treated the old way. So how do we handle that? Well, we have to use Object.assign inside of Object.assign for as many layers as we need. This is a horrible idea for lots of reasons, most importantly because it gets very confusing very quickly. Ideally, we don't nest anything. Instead we 'flatten' our state object. That means keeping it shallow, one or two levels deep at the most (flattening information like this to make it easier to work with is also called 'normalizing' data -- another big word for a simple idea). There are ways to deep copy objects (making sure every nested object is also a new copy not just a new reference to the same address), but they are either harder to write or require us using an outside library like lodash. And either way, we want to encourage clearer structure, which in our case means flatter.
+This isn't ideal. This is what shallow copying is. Everything at the top level is a unique copy (in this case our outer container object 'oldObject'), but everything deeper (nested) is treated the old way. So how do we handle that? Well, we have to use Object.assign inside of Object.assign for as many layers as we need. This is a horrible idea for lots of reasons, most importantly because it gets very confusing very quickly. Ideally, we don't nest anything. Instead we 'flatten' our state object. That means keeping it shallow, one or two levels deep at the most (flattening information like this to make it easier to work with is also called 'normalizing' data -- another big word for a simple idea). There are ways to deep copy objects (making sure every nested object is also a new copy not just a new reference to the same address), but they are either harder to write (using loops or recursion) or require us to use an outside library like lodash or underscore. And either way, we want to encourage clearer structure, which in our case means flatter.
 
 So, in practice it looks like this:
 
@@ -886,7 +911,9 @@ console.log(copy1.favorites) // {food: 'Tacos', color: 'Purple'}
 console.log(copy2.favorites) // {food: 'Cheesecake', color: 'Purple'}
 ```
 
-It works, but could you imagine going much deeper? It would get very confusing and very fidgety very fast. So let's promise ourselves, even though this isn't strictly necessary, never to nest objects or arrays in our state more than one level deep!
+It works, but could you imagine going much deeper? It would get very confusing and very fidgety very fast. So let's promise ourselves, even though this isn't strictly necessary, never to nest objects or arrays in our state more than one level deep! 
+
+> Normalizing isn't a rule, just an example of a best practice.
 
 This chapter definitely took us down a little rabbit hole of the specifics of how Javascript works so let's wrap this up by using our cool new Object.assign tool to make sure we are creating copies of our actual state and not just copies of the reference to it:
 
@@ -960,71 +987,27 @@ function createStore() {
 }
 ```
 
-GOTCHAS! YOu may notice something funny in our new code. Adding and changing don't do anything without first creating a copy of the state object. But deleting does. And that means we are actually deleting something on the original object before we make a copy of it. So we don't want to do that. There are ways to do this, but it actually addresses another issue of healthy practices. If we start adding and removing state fields, it's hard to build outide functions that rely on those pieces of state existing. So, from now on, we'll only add or delete values, not keys themselves. That way any function relying on a certain key will always find it, even if the value it points to is '', [], undefined,  or null. So, one more time for good luck:
+GOTCHAS! YOu may notice something problematic in our code. Adding and changing don't do anything without first creating a copy of the state object. But deleting does. And that means we are actually deleting something on the original object before we make a copy of it. So we don't want to do that. There are ways to do this, but it actually addresses another issue of healthy practices. If we start adding and removing state fields, it's hard to build outside functions that rely on those pieces of state existing. So, from now on, we'll only add or delete values, not keys themselves. That way any function relying on a certain key will always find it, even if the value it points to is '', [], undefined, or null. When we deal with different types of state more specifically we can specify what kind of empty state we want to use but for now we'll simply use the catch-all null:
 
 ```javascript
 function createStore() {
-  let currentState = {
-    name: 'Brendan',
-    fruit: 'Passion fruit',
-    color: 'Purple',
-    age: 35,
-    hair: false    
-  }
-  let isDispatching = false
-
-  function getState() { 
-    if(isDispatching) {
-      console.log('You can\'t call getState while the state is being changed')
-      return
-    } 
-    return currentState   
-  }
-
-  function dispatch(action) {
-
-    if(typeof action !== 'object') {
-      return
-    }
-
-    if(typeof action.type === 'undefined') {
-      return
-    }
-
-    if(isDispatching) {
-      return
-    }
-
-    isDispatching = true
-    currentState = changeState(currentState, action)
-    isDispatching = false
-  }
-
+  ...
   function changeState(state, action) {
-
-    const type = action.type
-
-    if (type === 'change') {
+    ...
+    else if (type === 'delete') {
       if(state.hasOwnProperty(action.itemType)) {
-        return Object.assign({}, state, {[action.itemType]: action.newItem})
+        return  Object.assign({}, state, {[action.itemType]: null})
       }
     }
-
-    else {
-      return Object.assign({}, state)
-    }
+    ...
   }
-
-  return {
-    getState,
-    dispatch
-  }
+  ...
 }
 ```
 
 ### Chapter 10: Reduction is the name of the game
 
-Now that we are using Object.assign, we can talk about what it does with a cool new word, 'reducing'. Reducing just means taking a lot of things and mashing them together into one. Isn't that just adding (or concatenating in programming terminology)? Yes, yes it is, thank you for asking. The difference is, when we reduce we also change the stuff we're mashing together so that it fits better. This usually means overriding repeated elements, which is how we are using it to update our state copies. So really our changeState is just a giant reduce function. It takes one object (state) and a second object (which we create from the information in our action message/object) and mashes them together to create a new, single object. So in honor of understanding what changeState really does, maybe we should give it a more appropriate name? After all, it isn't changing the state anymore so much as taking old state, new action and reducing that into new state. Something like this:
+Now that we are using Object.assign, we can talk about what it does with a cool new word, 'reducing'. Reducing just means taking a lot of things and mashing them together into one. Isn't that just adding (or concatenating in programming terminology)? Yes, yes it is, thank you for asking. The difference is, when we reduce we also change the stuff we're mashing together so that it fits better. This often means overriding repeated elements, which is how we are using it to update our state copies. So really our changeState is just a giant reduce function. It takes one object (state) and a second object (which we create from a combination of the information in our action message/object and the relevant piece of the old (current) state) and mashes them together to create a new, single object. So in honor of understanding what changeState really does, maybe we should give it a more appropriate name? After all, it isn't changing the state directly anymore so much as taking old state and a new action and subsequently 'reducing' that into new state. Something like this:
 
 ```javascript
 function reducer(oldState, newStuff) {
@@ -1032,7 +1015,7 @@ function reducer(oldState, newStuff) {
 }
 ```
 
-And that's exactly what we are doing. We've made a reducer. So let's rename 'changeState' to 'reducer'. While we're at it, for good measure, maybe we should fill in some of those error checks in our dispatch function as well. Right now when something is wrong with the action message we just exit the function without trying to change the state, but maybe we should at least give some kind of heads up to let usknow what exactly the problem was. Typically we'd use Errors, just for the sake of simplicity, we'll stick to good ol' console.log:
+And that's exactly what we are doing. We've made a reducer. So let's rename 'changeState' to 'reducer'. While we're at it, for good measure, maybe we should fill in some of those error checks in our dispatch function as well. Right now when something is wrong with the action message we just exit the function without trying to change the state, but maybe we should at least give some kind of heads up to let us know what exactly the problem was. Typically we'd use Errors, just for the sake of simplicity, we'll stick to good ol' console.log:
 
 ```javascript
 function createStore() {
@@ -1135,17 +1118,21 @@ function reducer(state, action) {
 }
 ```
 
-A small note. Switch statement are a bit different in that you can activate multiple 'case' blocks with one value. It will keep going down the list until it hits a 'break' or a 'return' statement. That's why we had to add the 'else' into our 'change' case. Yes, we could have let it naturally hit the 'default' case and we'd have no problem. But as soon as we start adding new cases, it will run through those first.
+> A small note. Switch statements are a bit different from if...else in that you can activate multiple 'case' blocks with one value. It will keep going down the list of cases until it hits a 'break' or a 'return' statement. That's why we had to add the 'else' into our 'change' case. Yes, we could have let it naturally hit the 'default' case and we'd have no problem. But as soon as we start adding new cases, it will run through those first.
 
-Keep in mind, the above syntax isn't necessary. It's just what people usually use with Redux (myself included) and I wanted you to get comfortable with seeing it. I personally find it makes scanning a reducer a bit easier on the brain if nothing else.
+Keep in mind, a switch statement isn't necessary. It's just what people usually use with Redux (myself included) and I wanted you to get comfortable with seeing it. I personally find it makes scanning a reducer a bit easier on the brain if nothing else.
 
 ### Chapter 11: Generics aren't just cheaper, they're better
 
-If you look at our new createStore function, you might notice something. Depending on what kind of program we write, our reducer might have a different decision tree and that would be because our state had a different structure. But other parts, in this case our dispatch method, won't change based on different kinds of state. That means we could reuse our createStore function in other programs (or in other parts of the same program) to create different stores that held different states with different reducers, as long as we don't hard code the parts that might change into the parts that won't.
+If you look at our new createStore function, you might notice something. Depending on what kind of program we write, our reducer might have a different decision tree if our program's state has a different structure. But other parts of our store, like our dispatch method, won't change based on different kinds of state. That means we could reuse our createStore function in other programs (or in other parts of the same program) to create different stores that held different states with different reducers, as long as we don't hard code the parts that might need to change (this is what it means to make code extensible (i.e. reusable)).
 
-So how do we do this? How do we make createStore more dynamic? Right now, we aren't calling createStore with any arguments. That means we always return the same result. But if we pass in our reducer and our state, we can reuse createStore as much as we want. While we're at it, since we are now passing in a reducer, we should at least perform a simple check to make sure the reducer is a function otherwise we'll never have a working store to begin with.
+So how do we do this? How do we make createStore more dynamic? Right now, we aren't calling createStore with any arguments. That means we always return the same result. But if we pass in our reducer and our state, we can reuse createStore as much as we want with any state shape we need. (While we're at it, since we are now passing in a reducer, we should at least perform a simple check to make sure the reducer is a function otherwise we'll never have a working store to begin with.)
 
-Also, before we get started, we'll want to store a copy of both our reducer and state as soon as our createStore function is called. We'll call our state object initialState now, since it's the state we use to initialize our store. As a note, we're going to name our internal reducer variable as currentReducer. This won't really serve any purpose in our simplified version of Redux since we are never going to change the reducer once we create the store, but it will serve to remind us that it would be a simple thing to do if created a method for it (and returned it in the same object as dispatch and getState). So let's see what all our pieces look like now and how we would go about creating a store:
+Also, before we get started, we'll want to store a copy of both our reducer and state as soon as our createStore function is called. We'll call our state object initialState now, since it's the state we use to initialize our store. 
+
+> As a note, we're going to name our internal reducer variable as currentReducer. This won't really serve any purpose in our simplified version of Redux since we are never going to change the reducer once we create the store, but it will serve to remind us that it would be a simple thing to do if we created a method for doing it (and returned it in the same object as dispatch and getState (redux has a replaceReducer method that does this)). 
+
+So let's see what all our pieces look like now and how we would go about creating a store:
 
 ```javascript
 function createStore(reducer, initialState) {
@@ -1223,14 +1210,14 @@ function reducer(state, action) {
 const store = createStore(reducer, initialState)
 ```
 
-Passing in arguments definitely makes it more reusable. Do you notice a possible problem though? Right now we are passing in the reducer and the initial state separately. That makes it possible for us to use whatever reducer and whatever state we want. Except, as you may have noticed, the reducer decision tree is completely dependant on what's inside the state object. That means we need to use our reducer only with the state it was designed for. The two pieces are inextricably linked and we should treat them as such. That means where one goes the other follows. So what's the best way to accomplish that?
+Passing in arguments definitely makes it more reusable. Do you notice a possible problem though? Right now we are passing in the reducer and the initial state separately. That makes it possible for us to use whatever reducer and whatever state we want. Except, as you may have noticed, the reducer decision tree is completely dependent on what's inside the state object. That means we need to use our reducer only with the state it was designed for. The two pieces are inextricably linked and we should treat them as such. That means where one goes the other follows. So what's the best way to accomplish that?
 
 
 ### Chapter 12: Default is not a place where earthquakes happen
 
-Right now a reducer takes in state and returns new state. We've already seen in our store above that we will keep storing that state in a currentState variable. Whenever dispatch is used, it grabs that currentState and throws it into the reducer and then takes the output and puts it back in currentState. But the very first time we run createStore nothing is inside the currentState. If we tried to use it, it would be 'undefined'. If we ran dispatch with it (AND an action -- remember, dispatch exits before completeing if it doesn't get an action with a 'type' key), the reducer would take the state we passed (which in this case is 'undefined') and skip to it's default case (unless we gave it a predefined action) which just returns that state to us unchanged (which would still be 'undefined'). How do we get our initialState into this process and still keep it linked to the reducer that acts on it?
+Right now a reducer takes in state and returns new state. We've already seen in our store above that we will keep storing that state in a currentState variable. Whenever dispatch is used, it grabs that currentState and throws it into the reducer and then takes the output and puts it back in currentState. But the very first time we run createStore nothing is inside the currentState. If we tried to use it, it would be 'undefined'. If we ran dispatch with it (AND an action -- remember, dispatch exits before completing if it doesn't get an action with a 'type' key), the reducer would take the state we passed (which in this case is 'undefined') and skip to it's default case (unless we gave it a predefined action) which just returns that state to us unchanged (which would still be 'undefined'). How do we get our initialState into this process and still keep it linked to the reducer that acts on it?
 
-We can use a neat little trick to always tie them together. Javascript lets us use something called default arguments. That means if an argument isn't provided when a function is called (which is the same as passing in 'undefined' or 'null' in this case), it will use the default instead. It looks like this:
+We can use a neat little trick to always tie them together. Javascript lets us use something called default arguments. That means if an argument isn't provided when a function is called (or when passing in 'undefined' or 'null' because of Javascript truthiness fun), it will use the default instead. It looks like this:
 
 ```javascript
 let defaultName = 'John Smith'
@@ -1282,7 +1269,7 @@ So now when the reducer is called without a state argument (or with 'undefined')
 
 What's the problem with this though? If we call dispatch as soon as we create the store, it will take the default initialState and save it to our currentState. But if we call getState before dispatch, all we'll get back is 'undefined' since nothing is inside currentState yet. That means we need to call an initial dispatch action as soon as we make our store, before a user has a chance to try and use getState on something that doesn't exist yet.
 
-Another thing to bear in mind is that we what this initial dispatch action to just return the initialState, that means we want to make sure whatever the action type is, it doesn't match one of our reducer cases. We want to ensure it hits the default at the bottom and just returns the initialState. How can we do this? How can we know for sure what action type will never be created by a user of our Redux? Well, we can't. We can use an old trick in programming which is 'reserving' keywords (that's why you can't name your variables in javascript things like 'if' 'default' or 'class', they are reserved and confuse the compiler). So, let's do that. We'll create an INIT action since what we are doing is performing our initialization action.
+Another thing to bear in mind is that we what this initial dispatch action to just return the initialState, that means we want to make sure whatever the action type is, it doesn't match one of our reducer cases. We want to ensure it hits the default at the bottom of our switch statement and just returns the initialState. How can we do this? How can we know for sure what action type will never be created by a user of our Redux? Well, we can't. We can use an old trick in programming which is 'reserving' keywords (that's why you can't name your variables in javascript things like 'if' 'default' or 'class', they are reserved and confuse the compiler). So, let's do that. We'll create an INIT action since what we are doing is performing our initialization action.
 
 ```javascript
 const initialAction = {
@@ -1388,20 +1375,20 @@ function reducer(state = initialState, action) {
 const store = createStore(reducer)
 ```
 
-And there we have it, a fully functioning store that accepts different reducers and state objects!
+And there we have it, a fully functioning store that accepts different reducers and state objects! Because the first time dispatch calls the reducer it uses currentState which is initially undefined, the reducer will return it's (now tightly coupled) initial state.
 
 
 ## Part 2: Using best practices to manage Actions
 
 ### Chapter 13: Lights, Camera, ACTION!
 
-We have, for all intents and purposes, a functioning state management device. Yes, there are some things missing and we'll address some of those later. But first let's look into another aspect of what he have already that we haven't really explored much. Actions. If they don't seem that complicated, it's because they aren't. All an action is is an object with a 'type' key. This object can come from anywhere and have anything other data inside it as well. So what is there left to really say? 
+We have, for all intents and purposes, a functioning state management device. Yes, there are some things missing and we'll address some of those later. But first let's look into another aspect of what he have already that we haven't really explored much. Actions. If they don't seem that complicated, it's because they aren't. All an action is is an object with a 'type' key. This object can come from anywhere and have any kind of data inside it. So what is there left to really say? 
 
 If you've tried using the real Redux library before, and your sense of confusion led you here, there's a decent chance a small part of that confusion arose out of the many different files that Redux seems to be split into. Reducers, Actions, Action Creators, Action Types... (Not to mention all the extra stuff that comes with using Redux in React (Providers, connect, mapStateToProps, mapDispatchToProps...)) 
 
-The reason for this crazy file splitting isn't because it's necessary, but because it's useful. Let's consider why that is now. While actions seem pretty straightforward on their own, we need to consider them as being part of a greater system. And to that extent we should see pretty obviously that they share a strong connection to our reducer. After all, the 'type' value of an action needs to match a 'case' in our reducer in order for the reducer to do anything (except of course when we specifically want to just return the initialState in our INIT action). Following that reasoning, we realize there are two limitations we should be placing on ourselves in order to avoid actions not matching the reducer correctly. 
+The reason for this crazy file splitting isn't because it's necessary, but because it's useful. Let's consider why that is now. While actions seem pretty straightforward on their own, we need to consider them as being part of a greater system. And to that extent it should be pretty obvious that they share a strong connection to our reducer. After all, the 'type' value of an action needs to match a 'case' in our reducer in order for the reducer to do anything (except of course when we specifically want to just return the initialState in our INIT action). Following that reasoning, we realize there are two limitations we should be placing on ourselves in order to avoid actions not matching the reducer correctly. 
 
-First of all, the string they both use needs to be the exact same, so why not just use the same string to begin with? That's what an Action Type is. It's just us storing a string in separate location so when we refer to it in multiple places in our program, it's always guaranteed to be the same. That's why it's in it's own file typically, and reducers and actions will just import the string variables they need insted of us having to hard code that string in two separate places to match. It looks something like this:
+First of all, the string they both use needs to be the exact same, so why not just use the same string to begin with? That's what an Action Type is. It's just us storing a string in a separate location so when we refer to it in multiple places in our program, it's always guaranteed to be the same. That's why it's in it's own file typically, and reducers and actions will just import the string variables they need instead of us having to hard code that string in two separate places to match. The other benefit is that if you type a variable name incorrectly your app will throw an error because it isn't defined, but if you misspell a string it will silently cause all sorts of problems. It looks something like this:
 
 
 ```javascript
@@ -1433,11 +1420,11 @@ function sayHello(name) {
 }
 ```
 
-There is one big difference between the two, something called hoisting. To hoist means to lift up and, in the same sense, when something is hoisted in Javascript it's lifted up to the top of the program. Huh? Typically when you run a program it starts at the top and runs to the bottom, line by line. It has no idea of what is coming until it gets there. But Javascript isn't really just running from start to finish. It scans the whole program before it actually starts running so it cheats and knows what's coming. Confusingly, sometimes it acts like it does and sometimes it pretends it doesn't. This is a pretty important distinction and it's worth reading more about it if you still feel confused (the keyword 'var' is famous for being problematic because of hoisting and that's why it's abandoned now in favor of 'let' and 'const' (when you know the variable won't change again)). However, for the sake of our exercise I'll just make a simple distinction. 
+There is one big difference between the two, something called hoisting. To hoist means to lift up and, in the same sense, when something is hoisted in Javascript it's lifted up to the top of the program. Huh? Typically when you run a program it starts at the top and runs to the bottom, line by line. It has no idea of what is coming until it gets there. But Javascript isn't really just running from start to finish. It scans the whole program before it actually starts running so it cheats and knows what's coming. Sometimes, which is the confusing bit. This is a pretty important distinction and it's worth reading more about it if you still feel confused (the keyword 'var' is famous for being problematic because of hoisting and that's why it's abandoned now in favor of 'let' and 'const' (when you know the variable won't change again)). However, for the sake of our exercise I'll just make a simple distinction. 
 
-When you use the 'function' keyword, that function is immediately available anywhere in the program, even if you put the function at the very bottom. That's hoisting. But if you create a function by giving it to a variable like we did in the first example above, it's only available to the parts of the program that come after it is created. So from now on, the order of declarations is even more important to consider. 
+When you use the 'function' keyword, that function is immediately available anywhere in the program, even if you put the function at the very bottom. That's hoisting. But if you create a function by assigning it to a const like we did in the first example above, it's only available to the parts of the program that come after it is created. So from now on, the order of declarations is even more important to consider. 
 
-The newer type of functions we will use from now on won't be hoisted because they also use a variable declaration when they are created. These are called arrow functions and they use the => fat arrow operator. Let's look at some examples of similarities between traditional functions (but declared instead of using the 'function' keyword) and arrow functions:
+The newer type of functions we will use from now on won't be hoisted because they also use a const declaration when they are created. These are called arrow functions and they use the => fat arrow operator. Let's look at some examples of similarities between traditional functions (but declared instead of using the 'function' keyword) and arrow functions:
 
 ```javascript
 const sayHello = function() {
@@ -1479,9 +1466,8 @@ const add = a, b => {
 }
 
 // ERROR!
+// That floating comma just confuses our compiler, so we need to wrap multiple arguments in () braces.
 ```
-
-That floating comma just confuses our compiler, so we need to wrap multiple arguments in () braces.
 
 There's a second, and much more confusing aspect to arrow functions, something called implicit return. It's really just a quirk of syntax though and not a new concept. Implicit return means that if you have a one line arrow function, you don't need the curly braces and you don't need to use the 'return' keyword, the compiler automatically assumes that's what you meant:
 
@@ -1491,7 +1477,7 @@ const add = (a, b) => a + b
 
 Is exactly the same as the version with 'return' above. 
 
-But what about if you want to return an object? It uses the same curly braces as the area where we'd normally put lines of code to run and confuses the compiler. So we just wrap it in our () braces first and the compiler knows it's like using the one line implicit return and it's actually an object not a block of code (we also do this when we want to implicitly return something that is multiple lines of code as you may see in examples of React functional components). 
+But what about if you want to return an object? It uses the same curly braces as the area where we'd normally put lines of code to run and confuses the compiler. So we just wrap it in our () braces first and the compiler knows it's like using the one line implicit return and it's actually an object and not a block of code (we also do this when we want to implicitly return something that is multiple lines of code as you may see in examples of React functional components). 
 
 These are the same:
 
@@ -1513,7 +1499,7 @@ Where implicit return gets really head-scratching is when we start returning fun
 const fullName = firstName => lastName => firstName + ' ' + lastName
 ```
 
-I will admit to sometimes having trouble wrapping my head around the more confusing strings of implicit return you see like this. What helps me is converting that back into a traditional non-implicit 'function' style in my head until I feel comfortable with the logic:
+I will admit to sometimes having trouble wrapping my head around the more confusing lengthy strings of implicit return you see like this. What helps me is converting that back into a traditional non-implicit 'function' style in my head until I feel comfortable with the logic:
 
 ```javascript
 function fullName(firstName) {
@@ -1543,26 +1529,35 @@ function iAmAScaryFunction() {
 } 
 ```
 
-The first time we call it it returns the next function deeper, and when we call that new function, it returns the next one deeper, and so on. So, if we want to get the word 'scary' back, we have to call it, save the new function, call that, and so on 4 times. Or we can do this: function()()()(). This has the same effect without us having to save the new function each time it gets returned (we just run it immediately instead).
+The first time we call it it returns the next function deeper, and when we call that new function, it returns the next one deeper, and so on. So, if we want to get the word 'scary' back, we have to call it, save the new function, call that, and so on 4 times. 
 
 ```javascript
-iAmAScaryFunction()()()() // 'Scary'
+const firstInnerFunction = iAmAScaryFunction(); // returns const f = () => () => () => 'Scary'
+const secondInnerFunction = firstInnerFunction(); // returns const f = () => () => 'Scary'
+const thirdInnerFunction = secondInnerFunction(); // returns const f = () => 'Scary'
+const innerString = thirdInnerFunction(); // returns 'Scary'
 ```
 
-Redux uses this technique but thankfully never goes as many levels deep in nested function returns as we did. 
+Or we can do this: function()()()(). This has the same effect without us having to save the new function each time it gets returned (we just run it immediately instead).
+
+```javascript
+iAmAScaryFunction()()()() // returns 'Scary'
+```
+
+> Redux uses this technique but thankfully never goes as many levels deep in nested function returns as we did.
 
 So, now that we're comfortable with arrow function syntax let's start using them in our codebase when we write reducers and other external functions (we'll leave the createStore stuff as is). Not because we really need to, but to get comfortable with how people typically write React and Redux programs.
 
-Now, back to the main action!
+*Back to the main action!*
 
-NOTE: If you're curious as to what details about arrow functions we skipped, they mostly have to do with the 'this' keyword. It's important to understand in some cases, but it doesn't make a difference to us at the moment. But do keep in mind that arrow functions are not hoisted. I.e. we can't use them until after we declare (create) them.
+> NOTE: If you're curious as to what details about arrow functions we skipped, they mostly have to do with the 'this' keyword. It's important to understand in some cases, but it doesn't make a difference to us at the moment. But do keep in mind that arrow functions are not hoisted. I.e. we can't use them until after we declare (create) them.
 
 
 ### Chapter 15: Where do actions come from? Storks?
 
 In order to explore actions a bit more clearly, let's create a new reducer/initialState/actionType to work with.
 
-We'll use a simple reducer 'case' that doesn't need any value except a 'type' and it automatically knows to add one to our state value (or in computer parlance, increment the state by one). 
+We'll use a simple reducer 'case' that doesn't need any value except a 'type' and it automatically knows to add 1 to our state value (or in computer parlance, increment the state by 1). 
 
 ```javascript
 // Action Type
@@ -1611,7 +1606,7 @@ const actionCreator = () => ({
 })
 ```
 
-So now we have a simple function that creates (and implicitly returns) an action object. If we give that to our dispatch function it will dispatch the action object to the store. So now instead of creating an object directly we just call the function that does it for us:
+So now we have a simple function that creates (and implicitly returns) an action object. If we give that to our dispatch function it will dispatch the action object to the store. A second benefit is that this is DRY, we don't have to create a new object manually each time we want to dispatch an action we just call the creator with the data that is most important. So now instead of creating an object directly we just call the function that does it for us:
 
 ```javascript
 store.dispatch(actionCreator())
@@ -1688,9 +1683,9 @@ const objectOne = {
 }
 ```
 
-There is a secondary benefit to using action creator functions instead of making our own action objects, it means we can't create new types of actions. Which makes sense of course because actions need to match the reducer cases. So the difference between sending an action object that the reducer can't understand and trying to use an actionCreator that doesn't exist, is that you'll get better error reporting while you are building your program. The former might return state unchanged accidentally, but the latter will crash your program and force you to fix the issue before continuing (this is a good thing!).
+There is a secondary benefit to using action creator functions instead of making our own action objects, it means we can't create new types of actions willy nilly inside of a component. Which makes sense of course because actions need to match the reducer cases. So the difference between sending an action object that the reducer can't understand and trying to use an actionCreator that doesn't exist, is that you'll get better error reporting while you are building your program. The former might return state unchanged accidentally, but the latter will crash your program and force you to fix the issue before continuing (this is a good thing!).
 
-So to recap, as a matter of good practice, not because it's essential, we'll share action types between our reducer and actions. Furthermore, we'll use action creator functions to create those actions and prevent anybody from sending their own, non-sanctioned actions to our store. A security guard if you will.
+So to recap, as a matter of good practice, not because it's essential, we'll share action types between our reducer and actions. Furthermore, we'll use action creator functions to create those actions and share them between different parts of a program, which in turn prevents anybody from sending their own, non-sanctioned actions to our store. A security guard if you will.
 
 ## Section 3: Subscriptions
 
@@ -1700,15 +1695,13 @@ At this point we've done most of the heavy lifting for our tutorial. We've built
 
 We've spent a lot of time thinking about the best way to change (dispatch) state. But what about getting it back? All we can do right now is manually ask for the state with getState. But how do we know when to ask? How do we know when the state has changed? If we call getState right after dispatch, what happens if dispatch takes longer than getState to complete? We won't see the new state at all.
 
-We're going to take advantage of another useful pattern that is used in all kinds of languages and all kinds of programs, not just Redux. The Publisher-Subscriber pattern, Pub-Sub for short. (You may have run across something called the Observer pattern as well. The two aren't conceptually different, the difference lies in how you implement the concept.)
-
-Pub-sub is pretty much what is sounds like (the long version that is, we're not talking about bar sandwiches after all), a way for things to subscribe to something and receive something back when it is published. Kind of like when you set up an automated google search alert on your name. 
+We're going to take advantage of another useful pattern that is used in all kinds of languages and all kinds of programs, not just Redux. The Publisher-Subscriber pattern, Pub-Sub for short.
 
 Right now, we have a few things that happen when we change the store's state. We have a dispatch function that takes a message and then sends it to the reducer function. The reducer takes the action and gives back to the dispatch function a new version of the store's state. The dispatch function then saves that new state in a variable (currentState) that is available to the rest of the store (like getState). And that's pretty much it. 
 
-Where do subscriptions come into this? Well, if we want other programs using this store to get notified whenever the store's state changes, we need to have a way for them to subscribe (listen) to the store. That means a subscribe function (and unsubscribe, natch). It also means we need to keep a list of all of our subscribers/listeners (there could be more than one place in a big program that would want to receive notifications of store changes). And at some point after the state has been changed we need to go through that list of listeners and notify them of the change (ie send them a copy of the new state). The most obvious location for that would be right after dispatch updates currentState. So why not just stick the notification logic right inside dispatch? Good idea, that's exactly what we'll do! 
+Where do subscriptions come into this? Well, if we want other parts of the program using this store to get notified whenever the store's state changes, we need to have a way for them to subscribe (listen) to the store. That means a subscribe function (and unsubscribe, natch, if they decide they don't need to listen anymore). It also means we need to keep a list of all of our subscribers/listeners (there could be more than one place in a big program that would want to receive notifications of store changes). And at some point after the state has been changed we need to go through that list of listeners and notify them of the change (whether or not we send them a copy of the new state as well is a question for the developer, in Redux's case it is not sent). The most obvious location for that would be right after dispatch updates currentState. So why not just stick the notification logic right inside dispatch? Good idea, that's exactly what we'll do! 
 
-However, before we do that, we'll need to figure out where to keep that list. We've already figured out that more than one of our store functions will need access to it: subscribe needs to add things to it, unsubscribe needs to remove things from it, and dispatch will need to read it to know where to send updates. So that means we should put it somewhere everyone can see it. How about right next to our other store variables? Good idea again, you're really on fire today! As a last note, since this is a list, we'll just use a simple array to store our listeners.
+However, before we do that, we'll need to figure out where to keep that list of listeners. We've already figured out that more than one of our store functions will need access to it: subscribe needs to add things to it, unsubscribe needs to remove things from it, and dispatch will need to read it to know where to send updates. So that means we should put it somewhere everyone can see it. How about right next to our other store variables? Good idea again, you're really on fire today! As a last note, since this is a list, we'll just use a simple array to store our listeners.
 
 Here's our new store with a few placeholders that we'll start filling in:
 
@@ -1788,7 +1781,7 @@ In order for two separate programs (in this case Redux and whatever program is u
 
 Instead of hard coding a receiving protocol, we should leave that to the external program to figure out. It should be free to do whatever it wants with our notifications. We just need a way to get them there in the first place. 
 
-How about if the external programs sent us a function that handled notifications? A listener function. We'd never have to know what's in it, just that we have to call it every time the state changes. We would always pass the new state object to the listener function, but after that our Redux store doesn't care what happens. That listener could do nothing, it could just record that changes happened but not what those changes were, it could just record the changes (like a time-travel debugger program would need to do), or it could take those changes and use them to change something inside of itself (updating based on state changes -- by far the most common use). It doesn't matter to our Redux what happens after we call the listeners with the new state. That makes it a lot simpler for us!
+How about if the external programs sent us a function that handled notifications? A listener function. We'd never have to know what's in it, just that we have to call it every time the state changes. We would even pass the new state object to the listener function, but after that our Redux store doesn't care what happens. That listener could do nothing, it could just record that changes happened but not what those changes were, it could just record the changes (like a time-travel debugger program would need to do), or it could take those changes and use them to change something inside of itself (updating based on state changes -- by far the most common use). It doesn't matter to our Redux what happens after we call the listeners with the new state. That makes it a lot simpler for us!
 
 So a listener function will be a function that comes from the external program and does somethign to the external program based on the new state that we pass it (or just based on the fact that it is being called at all). This listener function is an example of a callback function. A callback function is a function that is meant to be executed after something else happens. It's how we handle doing things in order when we don't know how long each thing will take to do. The external program has no way of predicting when it will receive updates from the store, but everytime that happens the callback will execute and handle those changes. This means the external program is free to go about it's business as usual instead of pausing everything to wait for updates.
 
@@ -1866,7 +1859,7 @@ function aProgram() {
 
 The output from running aProgram() should be: 42, 58, 100, 100. We are directly calling showstate on the first and last calls, the two in the middle are done by our store when it finishes updating.
 
-And that's it. The listener is a callback, but what aProgram does inside the callback listener isn't something our store has any clue about, all it knows is that it needs to call it after the state is updated and pass in the new state. However, if you remember, the store that we've been building all this time has a getState function already. Right now we still require external callback listeners to receive the new state directly, that's not particularly flexible. What if they don't want it? Well, instead, a listener can just act whenever something changes, and if wants to get the state it can, if it doesn't, it can do something else. It's more flexible that way. Let's add that into our toy example above:
+And that's it. The listener is a callback, but what aProgram does inside the callback listener isn't something our store has any clue about, all it knows is that it needs to call it after the state is updated and pass in the new state. However, if you remember, the store that we've been building all this time has a getState function already. Right now we still require external callback listeners to receive the new state directly, that's not particularly flexible. What if they don't want it? Well, instead, a listener can just act whenever something changes, and if wants to get the state it can, if it doesn't, it can do something else. Let's add that into our toy example above:
 
 ```javascript
 function createStore(callback) {
@@ -1914,7 +1907,7 @@ Let's implement this in our real store now.
 
 ### Chapter 18: Papa can you hear me?
 
-The biggest difference between our example subscription in the last chapter and what we want to have in our actual store is that we'll be using an array of listeners rather than a single one. Listeners also won't be passed in immediately when the store is created. We will use a subscribe function to add them later (as often as we want). So instead of calling the listener at the end of dispatch() we need to iterate through the array of listeners and call each one in turn:
+The biggest difference between our example subscription in the last chapter and what we want to have in our actual store is that we'll be using an array of listeners rather than a single one. Listeners also won't be passed in immediately when the store is created. We will use a subscribe function to add them later (as often as we want). So instead of just calling the one listener at the end of the dispatch() function we need to iterate through the array of listeners and call each one in turn:
 
 ```javascript
 // Don't try and run this code directly since it's part of the larger createStore function
@@ -1952,9 +1945,9 @@ function subscribe(listener) {
 }
 ```
 
-Hold on a second, did I say something like that? I meant that exactly. Yeah, that's it. Sure, we should do some error checking, especially to make sure the listener is actually a function, but otherwise, that's pretty much how subscribing works. 
+Hold on a second, did I say 'something like that'? I meant that exactly. Yeah, that's it. Sure, we should do some error checking, especially to make sure the listener is actually a function, but otherwise, that's pretty much how subscribing works. 
 
-There is a problem with this approach though and that is we are directly changing (mutating) our array. If we've followed one core tenet throughout this guide it's that we should avoid mutations whereever possible. For example, if one part of our program tries to unsubscribe while another part is calling dispatch which will also be using that array at the same time. How do we avoid that? Well, we create a new copy to change instead of changing the old one directly. Dispatch will use the array of current listeners, while any changes we want to make we'll make to a new array of listeners (this will be the array of listeners we use in future dispatch calls so we can call it nextListeners).
+There is a problem with this approach though and that is we are directly changing (mutating) our array. If we've followed one core tenet throughout this guide it's that we should avoid mutations whenever possible. For example, if one part of our program tries to unsubscribe while another part is calling dispatch which will also be using that array at the same time. How do we avoid that? Well, we create a new copy to change instead of changing the old one directly. Dispatch will use the array of current listeners, while any changes we want to make we'll make to a new array of listeners (this will be the array of listeners we use in future dispatch calls so we can call it nextListeners).
 
 The nextListeners array will start as a simple copy of the currentListeners but before we make changes to it (like adding new subscribers) we'll check to see if it is actually the same array reference as currentListeners. If it is we'll need to create a fresh copy for it to make changes to. Since the idea is to make sure we can change (mutate) our nextListeners array without affecting the currentListeners array (which now becomes a historical record of previous listeners), we can create and call a helper function ensureCanMutateNextListeners(). It really rolls off the tongue, right! Here's what it should look like:
 
@@ -2050,7 +2043,7 @@ Now that we can subscribe and call our listeners, what exactly does unsubscribin
 
 But before we even begin to deal with how to identify it (and that will be the harder part), let's do a quick refresher on the general mechanics of removing something from an array.
 
-Removing an element from an array is not as easy or straightforward as adding (pushing) it (unless it's at the beginning (array.shift()) or the end (array.pop()) of the array). Here are two ways we can do it when the location of the element is unknown but the element itself is known:
+Removing an element from an array is not as easy or straightforward as adding (pushing) it unless it's at the beginning (array.shift()) or the end (array.pop()) of the array. Here are two ways we can do it when the location of the element is unknown but the element itself is known:
 
 ```javascript
 const el1 = 'Hello'
@@ -2091,9 +2084,13 @@ function unsubscribe(listener) {
 
 Ok, that's all well and good, but the big question is how does our external program get access to this unsubscribe function, and how does the function get access to the listener so that it can find it and remove it from our array of listeners?
 
-It's worth noting that, like many questions in programming, there isn't one right answer. For example, the most obvious solution to you might be to add an unsubscribe method to the store object we return at the end of createStore. Then the external program can call that with the listener it wants to unsubscribe from at a later time. But that means the external program has to keep track of the listener callback just for the purposes of calling unsubscribe later (it needs the listener to be able to find it from the array of nextListeners in order to remove it). 
+> It's worth noting that, like many questions in programming, there isn't one right answer. For example, the most obvious solution to you might be to add an unsubscribe method to the store object we return at the end of createStore. Then the external program can call that with the listener it wants to unsubscribe from at a later time. But that means the external program has to keep track of the listener callback just for the purposes of calling unsubscribe later (it needs the listener to be able to find it from the array of nextListeners in order to remove it). 
 
-We're going to use a different method. One that brings us back to a concept we covered much earlier, closures. Remember, a function always stays connected to any variables that it references at the time of its creation, even if it subsequently gets passed all over the place. And we already have a reference to the appropriate listener inside of the subscribe function. So if we create the unsubscribe function inside of subscribe, it will always be attached to the appropriate listener. Of course we need to make sure we return that function at the same time, otherwise there won't be any way to access it. Just for good measure, we should also prevent unsubscribe from being called inside an action. We'll use isDispatching once again to make sure of that. When we put everything together it should look like this:
+We're going to use a simple method. One that brings us back to a concept we covered much earlier, closures. Remember, a function always stays connected to any variables that it references at the time of its creation, even if it subsequently gets passed back and forth all over the program. And we already have a reference to the appropriate listener inside of the subscribe function. So if we create the unsubscribe function inside of subscribe, it will always be attached to the appropriate listener. Of course we need to make sure we return that function at the same time, otherwise there won't be any way to access it later. 
+
+> Just for good measure, we should also prevent unsubscribe from being called inside an action. We'll use isDispatching once again to make sure of that. 
+
+When we put everything together it should look like this:
 
 ```javascript
 function subscribe(listener) {
@@ -2129,7 +2126,7 @@ Voila. A working subscribe/unsubscribe system.
 
 So we have a working unsubscribe function and that's awesome but we should take a minute to also consider how it might be possible to mess things up. For example, what happens when these functions are called more than once? 
 
-If we call subscribe multiple times with the different callback listeners, that's fine, that's actually the intended use case. If we call it multiple times with the same listener? Well, things could get weird. But, there isn't a perfect solution. Hopefully, if the listener is doing the right thing (like updating local state), its just going to make the program less efficient with redundant calls. 
+If we call subscribe multiple times with the different callback listeners, that's fine, that's actually the intended use case. If we call it multiple times with the same listener? Well, things could get weird. But, there isn't a perfect solution. Hopefully, if the listener is doing the right thing (like updating local state), at worst its just going to make the program less efficient with redundant calls. 
 
 Where things can really go off the rails is when we call unsubscribe multiple times. Why is that? It should only work if it finds the listener it's looking for right? Well, no. Array.indexOf(element) normally returns the index of an element in an array. But if it can't find the element it returns the number -1. This can be useful, it's a common tool used when trying to find out if something is in an array at all:
 
@@ -2177,15 +2174,19 @@ function subscribe(listener) {
 }
 ```
 
-At this point we won't be adding any more functionality. We'll cleanup a little bit, put all the pieces together and see what we've made in all it's glory.
+At this point we won't be adding any more functionality to our store. We'll cleanup a little bit, put all the pieces together and see what we've made in all it's glory.
 
 ## Section 4: Cleanup and error handling 
 
 ### Chapter 22: Error, error does not compute.
 
-Up to now, we've been using console.log to notify when an error occurs. That can be helpful for a programmer doing some debugging but what happens if our external program wants to know when something goes wrong? Nothing. The program that is calling functions on the store has no way to know when an error occurs or react to them. We need to find a better way to handle errors. That's where the 'throw' statement comes in.
+Up to now, we've been using console.log to notify when an error occurs. That can be helpful for a programmer doing some debugging but what happens if our external program wants to know when something goes wrong? Nothing. The program that is calling functions on the store has no way to know when an error occurs. We need to find a better way to handle errors. That's where the 'throw' statement comes in.
 
-Throwing is pretty straightforward, but there are still a few particulars we should review. First of all, we can actually throw anything we want, it doesn't have to be an Error object. However, we will stick to Errors for this guide. For one, it makes it more predictable for external programs that are trying to handle Errors to know what to expect. We also need to create Error instances with the 'new' keyword. A basic example looks like this:
+Throwing is pretty straightforward, but there are still a few particulars we should review. 
+
+> Note: we can actually throw anything we want, it doesn't have to be an Error object. However, we will stick to Errors for this guide. 
+
+A basic example of throwing an Error message looks like this:
 
 ```javascript
 throw new Error('I am an error message')
@@ -2206,7 +2207,7 @@ catch (err) {
 }
 ```
 
-If we run the above code we should see 'Now you see me' followed by 'Error: Something went wrong' in the console. So whatever we throw will get caught by any try...catch block that is in contained in. Importantly, if there are multiple nested try...catch blocks, the first one that is triggered by the 'throw' is the only one that will see it. So if we wrap anything in try...catch inside our Redux than external programs will never see the Errors either.
+If we run the above code we should see 'Now you see me' followed by 'Error: Something went wrong' in the console. So whatever we throw will get caught by any try...catch block that it is contained in. Importantly, if there are multiple nested try...catch blocks, the first one that is triggered by the 'throw' is the only one that will see it. So if we wrap anything in try...catch inside our Redux than external programs using the store will never see the Errors either.
 
 The onus will be on the external program to handle errors, we just want to make sure they get there. So we're going to start replacing our console.log error handling with throwing errors.
 
@@ -2400,7 +2401,7 @@ const counterReducer = (state = initialState, action) => {
     case DECREMENT:
       return Object.assign({}, state, {counter: state.counter - 1})
     case RESET:
-      return Object.assign({}, state, {counter: 0})
+      return initialState;
     default:
       return state
   }
@@ -2427,7 +2428,7 @@ Now we need a store:
 const store = createStore(counterReducer)
 ```
 
-Ok, we're ready to roll. Oh, right, we need a program to use this with! Let's make the absolute bare minimum (sorry CSS) program. We want it to have one display (the counter value) and three buttons (one for each action). We aren't going to use any fancy framework, we won't even create DOM nodes dynamically. We're just going to use Javascript to hook on to an existing element and innerHTML to rewrite it's value every time we get an update from the store. Like this:
+Ok, we're ready to roll. Oh wait...we need a program to use this with! Let's make the absolute bare minimum (sorry CSS) program. We want it to have one display (the counter value) and three buttons (one for each action). We aren't going to use any fancy framework, we won't even create DOM nodes dynamically. We're just going to use Javascript to hook on to an existing element and innerHTML to rewrite it's value every time we get an update from the store. Like this:
 
 ```html
 <div id="counter">0</div>
@@ -2614,19 +2615,16 @@ Let's put that all together (you may notice I use multiple <script></script> tag
 
 Voila! If you copy the above code into a separate HTML file and run it, you should have a working program that uses our Redux redux for state management.
 
-An important note to make is that our small example program is simply a demonstration of how to integrate Redux into a real project. We haven't done anything that takes advantage of Redux's particular strengths. For example, we could use our browser's local storage to store a copy of the state and pass that to createStore on future visits to save changes. We could also store a copy of each change to the reducer in an array and use that to 'time-travel' through our state by adding Fast Forward and Rewind buttons.
+> An important note to make is that our small example program is simply a demonstration of how to integrate Redux into a real project. We haven't done anything that takes advantage of Redux's particular strengths. For example, we could use our browser's local storage to store a copy of the state and pass that to createStore on future visits to save changes. We could also store a copy of each change to the reducer in an array and use that to 'time-travel' through our state by adding Fast Forward and Rewind buttons.
 
-## Appendix 1: What's missing?
+### Chapter 24: Enhancer, ApplyMiddleware, and Compose (Higher Order Functions, Currying, and Function Composition)
 
-### Chapter 24: Overview
-
-If you take a look at the real Redux source code now, especially the createstore.js file, you might be happily surprised to realize it looks very, very familiar. In fact, hopefully, by this point the documentation has stoppped feeling overwhelming and started feeling incredibly obvious and sensible. However, you will still run into small differences between what we did and what Redux does. On thing you may notice is that dispatch() in Redux returns the original action it was passed. We never added that feature. It's not essential, but having functions return something on execution can offer more flexibility in how the external program that calls them is structured.
+If you take a look at the real Redux source code now, especially the createStore.js file, you might be happily surprised to realize it looks very, very familiar. In fact, hopefully, by this point the documentation has stopped feeling overwhelming and started feeling incredibly obvious and sensible. However, you will still run into small differences between what we did and what Redux does. On thing you may notice is that dispatch() in Redux returns the original action it was passed. We never added that feature. It's not essential, but having functions return something on execution can offer more flexibility in how the external program that calls them is structured.
 
 You might also notice that the official Redux createStore has two more functions: replaceReducer and observable. ReplaceReducer does exactly what you might think, allowing us to swap out reducers after the store has been created. Observables are another type of programming pattern, similar to pub-sub, that some frameworks favor. If you looks closely though in Redux's case it is just a wrapper over the subscribe functionality we've already built.
 
-The much bigger change you may notice is that the Redux createStore handles a third argument, enhancer. This is one of the most important features of Redux that we have so far completely ignored. You'll also notice a bindActionCreators and a combineReducers module which we will touch on as well -- again, at this point, much of what's left to say is well covered in the source code and this guide may be a bit redundant.
+The much bigger change you may notice is that the Redux createStore handles a third argument, enhancer. This is one of the most important features of Redux that we have so far completely ignored and it's the last one that we'll spend significant time with. You'll also notice a bindActionCreators and a combineReducers module which we will touch on as well -- again, at this point, much of what's left to say is well covered in the source code and this guide may be a bit redundant.
 
-### Chapter 25: Enhancer, ApplyMiddleware, and Compose (Higher Order Functions, Currying, and Function Composition)
 
 The underlying value of the enhancer argument is that it lets you pass in custom functions which extend Redux (give it new, cool features). We touched on what this constitutes very briefly in chapter 14 when we mentioned composition and currying. 
 
@@ -2701,11 +2699,11 @@ To use that we do:
 const wrappedAdd = wrapper(add)
 ```
 
-And now we can use wrappedAdd to both get the results of the original function as intended and log it to the console at the same time.
+And now we can use wrappedAdd to both get the results of the original function as originally intended as well as log it to the console at the same time.
 
-You may notice our wrapper function is built to expect the function it is wrapping to have two arguments, 'a' and 'b'. This makes it pretty inflexible. Instead we can capture all of the arguments (no matter how many there are) and pass them to our wrapped function without ever having to know how many or what they are. There are a few ways to do this in Javascript. Typically you either see people use the 'arguments' keyword which is a secret feature of any function. It is like an array (but not quite) and it holds all the arguments in an array, you don't have to make it yourself. 
+You may notice our wrapper function is built to expect the function it is wrapping to have two arguments, 'a' and 'b'. This makes it pretty inflexible. Instead we can capture all of the arguments (no matter how many there are) and pass them to our wrapped function without ever having to know how many or what they are. There are a few ways to do this in Javascript. Typically you either see people use the 'arguments' keyword which is a secret feature of any function. It is like an array (but not quite) that holds all the arguments passed to a function, you don't have to make it yourself. 
 
-The other way that is more common these days because it is more flexible (though we won't take advantage of that aspect right now) is to use a spread operator. We saw this much earlier as one way of cloning arrays and objects. Here it will first gather all the arguments a function gets into an array, and then when we use it again it will spread those back out, just like we found them, in the new array we return:
+The other way that is more common these days is to use a spread operator. We saw this much earlier as one way of cloning arrays and objects. Here it will first gather all the arguments a function gets into an array, and then when we use it again it will spread those back out, just like we found them, in the new array we return:
 
 ```javascript
 function wrapper(func) {
@@ -2725,31 +2723,360 @@ That's what the enhancer argument is. It's an unknown higher order function. We 
 return enhancer(createStore)(reducer, preloadedState)
 ```
 
-The problem with this is that it only let's use use one higher order function. That's not so awesome. There are all kinds of cool enhancements we could add in the middle of receiving the first arguments and returning the final result. Like so originalFunction -> enhancer -> enhancer -> enhancer -> finalModifiedFunction. Those middle enhancer are called middleware in programming. Functions or programs that take an input and pass on the modified result to the next function in a chain. 
+The problem with this is that it only let's use use one higher order function. That's not so awesome. There are all kinds of cool enhancements we could add in the middle of receiving the first arguments and returning the final result. Like so originalFunction -> enhancer -> enhancer -> enhancer -> finalModifiedFunction. Those middle enhancers are called 'middleware' in programming. Functions or programs that take an input and pass on the modified result to the next function in a chain. 
 
 Because createStore can only accept one enhancer, in order to have multiple higher order functions we need to somehow combine them into one. Remember function composition? That's what applyMiddleware is. It's a higher order function that takes any number of other HOFs and returns a new higher order function that takes createStore as an argument. That new function is the enhancer function we already looked at above. The new enhancer function is run and calls createStore to create a store as normal. However, instead of just giving it back to us like usual, first it creates a new version of the dispatch function (this is the only function that Redux allows middleware to be applied to), that new version of dispatch is then wrapped with all the middleware functions, one after the other (this is composition and it's what the Redux 'comopose' function is for). Finally, the original store object (with getState, subscribe, etc.) is returned with the new modified dispatch function.
 
-Middleware is powerful and let's us add all kinds of new functionality to our store. There are all kinds of enhancements we could use but by far the most common type is something to handle asynchronous behavior. Let's cover that briefly.
+Middleware is powerful and let's us add all kinds of new functionality to our store. There are all kinds of enhancements we could use but by far the most common type is something to handle asynchronous behavior. Let's take a look.
 
-### Chapter 26: Thunks (Async)
+## Appendices
 
-<!-- Now, we've talked a lot about time travel debugging as one of the reasons Redux is so popular (it's also the reason it was originally created) but we haven't really seen what that looks like. We're not going to build that functionality out, but if you want to think about what the simplest version would entail, you might realize it's pretty simple. Every time we dispatch an action, we get back the new state. So far we are replacing the same variable over and over again which is erasing our history. But what if we stored those copies in an array as well? Then we could go back and forth all day loading different copies into currentState. Unfortunately, that's out of scope for us now. Instead we're going to move on to part two. Actions. -->
+IMPORTANT! From here on out we will be using the real Redux library and it's version of createStore. The original scope of the tutorial didn't cover reimplementing a few pieces of functionality that we will need for exploring middleware, namely applyMiddleware. Because our version of Redux mirrored the original so closely, we don't have to change the way we interact with the store or the structure of our reducers, action creators etc. 
+
+Also good to note is that in practice, Redux is almost always used in programs that use modules (when the program is broken up into multiple files that are then recombined using require/import statements) and so you would typically need to do something like this at the top of your program: 
+
+```javascript
+import { createStore, combineReducers, applyMiddware } from 'redux';
+```
+
+If you want to keep using the single file we've been building in without imports, you can use a CDN (a website that keeps files online for us to access without having to keep our own copy). At the time of writing, this works https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.js. Now we will have access to redux methods in our program on the global scope (we can access it anywhere) using the Redux namespace (the methods are all in an object called Redux). Like so:
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.js"></script>
+<script>
+  const store = Redux.createStore(/* our reducer goes here same as before */)
+</script>
+```
+
+We can also make it easier to access the methods by doing this by destructuring the methods to the global scope first. And then our code will look like it would in a program using modules with import statements:
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.js"></script>
+<script>
+  const { createStore, applyMiddleware, combineReducers } = Redux;
+  const store = createStore(/* our reducer goes here same as before */)
+</script>
+```
+
+For the rest of appendices, I will assume the above process has been done so that we can use the more common shorthand.
+
+### Appendix 1 - Middleware
+
+The modern Javascript world is full of choices. If you got this far in my guide then you've probably already made a few of your own. You chose a DIY approach over a CMS like Wordpress, React over Angular, and Redux over MobX. You would think that would be enough but no, now you are faced with the most impenetrable choice yet, Thunks or Sagas? I mean, really, what on Earth is a thunk? What is a saga? When will the choices stop!
+
+In short, Thunks and Sagas (and Redux-Observable if you've seen that one too) are different approaches to handling complicated processes in a React/Redux app, often asynchronous, that take advantage of the ability to extend the dispatch function with applyMiddleware. 
+
+> We won't talk about Sagas here since that is a fully featured library (using more new paradigms like generator functions) and we are focused on understanding the core Redux functionality. 
+
+Despite the bizarre name and the fact that thunks are another library you have to install, they are in fact one of the easiest parts of Redux to understand. But before we dive into thunks, let's get a better understanding of what Redux middleware looks like and how it works.
+
+### Appendix 1.1: The basic structure of middleware 
+
+We already know that dispatch takes an action and passes it to a reducer before capturing the result. We also saw that middleware are functions that take that action, possibly do something with it and then pass it on (forming a chain between the initial call of the modified dispatch between and the final process of calling the reducer with the action (the original dispatch method)). Because of the way dispatch is constructed, middleware needs to have a certain common structure. It's going to look complicated (it uses a lot of currying) at first but fear not! The best part is that the pattern never really changes, anytime you want to make a new middleware, you can simply copy the skeleton over. So what does it look like?
+
+```javascript
+const middleware = store => next => action => {
+  // Your code here
+}
+```
+
+Which is the same as:
+
+```javascript
+function middleware(store){
+  return function(next){
+    return function(action){
+      // Your code here
+    }
+  }
+}
+```
+
+You should also note that store represents an object with access to the getState and dispatch methods of our store so that we can use them in our middleware (that's what makes middleware so powerful), and you'll often see it destructured in the arguments directly (one or both methods), like so:
+
+```javascript
+const middleware = ({ dispatch, getState }) => next => action => {
+  // Your code here
+}
+```
+
+Sometimes you don't need either (like a logging middleware) and you can just use:
+
+```javascript
+const middleware = () => next => action => {
+  // Your code here
+}
+```
+
+That's it! Well, sort of. The middleware above won't be very useful. In fact, it will effectively break our store. You'll remember I said the middleware acts like a chain of sorts to pass the action along (something like this: modifiedDispatch -> middleware1 -> middleware2 -> originalDispatch -> reducer). Well, you'll notice we haven't passed anything along, so any action that gets passed to our middleware will get stuck and never make it to our reducer to update the state. How do we fix that? Well, in this pattern 'next' represents the unknown function that represents the next link in the chain (either another middleware or, eventually, the final link in the chain, the original dispatch method that calls the reducer with the action). So in order to pass the action to the next function, we simple pass it to next. Like so:
+
+```javascript
+const middleware = () => next => action => {
+  next(action);
+}
+```
+
+That is a fully functioning piece of middleware. Well, except it doesn't do anything. So let's add a tiny bit of functionality, we'll log the action to the console so we can see the actions being called under the hood while our program runs.
+
+```javascript
+const loggerMiddlware = () => next => action => {
+  console.log(action);
+  next(action);
+}
+```
+
+### Appendix 1.2: Applying middleware
+
+Before we go any deeper, let's quickly look at how to add this middleware to your Redux store. Remember, 'createStore' and 'applyMiddleware' come from Redux.
+
+```javascript
+// This is mock reducer (remember the pattern, a reducer is a function that takes current state and an action and returns new state)
+const uselessReducer = (state = {}, action) => state;
+const uselessMiddleware = store => next => action => { next(action) };
+const store = createStore(uselessReducer, applyMiddleware(uselessMiddleware));
+```
+
+That's all there is to it. You can pass more middleware as more arguments to applyMiddleware. I.e. applyMiddleware(middleware1, middleware2, middleware3). Middlewares will be executed in the order in which they are passed. I.e. applyMiddleware(middleware1, middleware2, middleware3) will lead to a dispatch that looks like enhancedDispatch -> middleware1 -> middleware2 -> middleware3 -> originalDispatch -> reducer.
+
+Since we didn't fully replicate this functionality in our version of createStore, I want to briefly mention whats going on under the hood here. The real createStore takes up to three arguments: a single reducer, preloadedState, and a single enhancer. If you have multiple reducers (and you will), you use 'combineReducers' to glue them all together before passing them as the first parameter. If you have previously saved the state of the store and want to restore it on load (I use this for things like saving the state to sessionStorage so the app doesn't restart from scratch when someone refreshes the page). If you want to add middleware you need to combine (compose) them with applyMiddleware first. Redux uses a little trick to let you pass in an enhancer even without previous state so when you pass only two arguments the second argument can be either state or an enhancer (createStore checks if the second argument is a function or not to decide what to treat it as). Like so:
+
+```javascript
+  if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
+    enhancer = preloadedState;
+    preloadedState = undefined;
+  }
+```
+
+If there is an enhancer passed (and it's a function), instead of running the rest of the createStore function, instead the function will be passed to the enhancer along with the other arguments (the reducer and the preloadedState). Like so:
+
+```javascript
+  if (typeof enhancer !== 'undefined') {
+    if (typeof enhancer !== 'function') {
+      throw new Error('Expected the enhancer to be a function.');
+    }
+
+    return enhancer(createStore)(reducer, preloadedState);
+  }
+```
+
+This gives the enhancer the chance to modify (enhance) createStore (really only the dispatch method if you recall from earlier), after which it will run the enhanced version with the other original arguments.
+
+> It is possible to pass other enhancers that do more than just add middleware to the dispatch chain, but we will consider that out of scope for now. This requires using a compose function we haven't covered (but applyMiddleware uses under the hood), and following a certain pattern (applyMiddleware needs to be passed first).
+
+### Appendix 1.3: Thunks
+
+We've finally made it. All that build up and now we can finally discuss the widely feared THUNKS of lore. Be prepared for a bit of a surprise. 
+
+First of all, what does thunk mean? Is it just the sound of your head hitting the table in frustration? Possibly. But it does have another more useful meaning (it has a few but we'll only focus on the relevant one). In essence a thunk is a function that wraps another function in order to delay it's execution until a later time. Let's say we had a function that returned some words:
+
+```javascript
+const getHello = () => 'Hello'
+```
+
+And another function to 'say' those words (this is a higher order function (a function that wraps another function)):
+
+```javascript
+const talk = thingToSay => { console.log(thingToSay()) }
+```
+
+So, we can do this:
+
+```javascript
+talk(getHello) // 'Hello'
+```
+
+By passing the word function into the talk function, we are able to say something. Now, let's make it more complicated. if instead of talk directly calling console.log, what if it instead used another method to do that. (We might as well change thingToSay to getWords, since that's what it's really doing anyway.)
+
+```javascript
+const talk = getWords => {
+  const sayWords = words => { console.log(words) }
+
+  const words = getWords();
+  sayWords(words);
+}
+
+// NOTE: The way we call it hasn't changed
+talk(getHello) // 'Hello'
+```
+
+ Right now 'talk' expects the 'getWords' function to return a string immediately (and it doesn't expect a promise so we can't use that trick) which it then immediately passes to 'sayWords' to log to the console. But what if the 'getHello' function needed some extra time to get the words it needs (like from a database) instead of returning them immediately? There are different approaches to handling this issue, but the one we will look at is passing 'sayWords' to 'getHello' so that 'getHello' can use decide when to call 'sayWords' instead of 'talk'. 
+
+ ```javascript
+ const getHello = sayWords => {
+   sayWords('Hello');
+ }
+ ```
+
+ Now, if there's a delay in retrieving the word 'hello', there isn't a problem because 'getHello' has access to 'sayWords' and can call it when it's ready.
+
+ ```javascript
+ const getHello = sayWords => {
+   fetch('http://www.placewithwords.com')
+    .then(response => {
+      sayWords(response)
+    })
+ }
+ ```
+
+Now, if you've been paying attention, you might be wondering why 'talk' couldn't just expect a delay if it knew 'getWords' was an async function. Something like:
+
+```javascript
+const talk = getWords => {
+  const sayWords = words => { console.log(words) }
+  
+  getWords()
+    .then(response => sayWords(response))
+}
+```
+
+That works, as long as getWords returns a promise. Something like:
+
+```javascript
+const getHello = () => fetch('http://www.placewithwords.com')
+```
+
+But now we have two functions that are tightly coupled (very interdependent). There isn't a lot of flexibility for different kinds of getWords functions. What if a new 'getName' function didn't use fetch but instead looked up a file on the local directory? How would 'talk' know how to handle the results? It wouldn't, it's expecting a certain type of response to then pass to 'sayWords'. It could try and handle different types of responses, but this would be difficult to say the least. So, instead of having 'talk' be responsible for deciding how to handle different kinds of 'getWords' functions before calling 'sayWords', we just have 'talk' pass 'sayWords' to them and let them handle it. Now 'talk' becomes an agnostic way to provide functions with a method to 'sayWords'. As long as the functions expect to be passed 'sayWords' as an argument, everything works.
+
+```javascript
+const getHello = sayWords => {
+  fetch('http://www.placewithwords.com')
+    .then(response => {
+      sayWords(response)
+    })
+}
+
+const talk = getWords => {
+  const sayWords = words => { console.log(words) };
+  getWords(sayWords)
+}
+
+talk(getHello); // 'Hello'
+```
+
+So, now 'getHello' is a thunk. It takes a function and then delays calling it until it's ready. And 'talk' is like a thunk helper, it passes the functions that the thunk needs to it. Nothing else. We could even do a safety check for the hell of it. If 'talk' receives something that isn't a function it will throw an error, so we can do a simple check.
+
+```javascript
+const talk = getWords => {
+  const sayWords = words => { console.log(words) };
+  if(typeof getWords === 'function'){
+    getWords(sayWords);
+  }
+}
+```
+
+Now it only tries to run the thunk when it's sure it's a function. Cool.
+
+So, how does this longwinded explanation of a pretty simple process apply to redux-thunk? Let's make a new middleware to see. Like before, we use the same scaffolding:
+
+```javascript
+const middleware = ({ dispatch, getState }) => next => action => {
+  next(action);
+}
+```
+
+We want this new middleware to do something a little different. Instead of logging the action object to the console or something, instead we want to see if the action isn't actually an action, but instead a thunk. How do we do that? Well, we can check to see if the action is a thunk, just like before. 
+
+```javascript
+const middleware = ({ dispatch, getState }) => next => action => {
+  if(typeof action === 'function'){
+    // Do something
+    return;
+  }
+  next(action);
+}
+```
+Why do we return? It's a guard clause like we saw way back in chapter 5, because we don't want to pass the thunk action to another middleware in the chain. At this point, the thunk is now in control of it's own destiny (and no other middleware will know how to handle a thunk instead of an action object that they are built to expect). If the action is not a thunk, then we simply ignore it and pass it to the next middleware in the chain. So, what can we put in place of 'Do something'? Like we saw in our 'talk' example above, we want this middleware to be agnostic. It's only job is to provide the thunk with control of it's own destiny. In the case of an action, control means having direct access to dispatch (and getState). So:
+
+```javascript
+const middleware = ({ dispatch, getState }) => next => action => {
+  if(typeof action === 'function'){
+    return action(dispatch, getState);
+    // We can combine the thunk call and return statement into one line
+  }
+  return next(action);
+}
+```
+
+That's it. No joke. That is redux-thunk. You've seen dozens of tutorials explaining it, and there it is, in all it's naked glory. If an action is an object, call the action with dispatch and getstate, otherwise ignore the action. 
+
+Now, I would never lie to you, if you look at the source code for redux-thunk, you'll see a few more lines of code (and only a few). All they are is a wrapper that allows you to pass an extra argument to your thunk action creators in addition to getState and dispatch. So, what does a thunk look like in redux? You might be happily surprised to see that it looks almost exactly like 'getWords'.
+
+```javascript
+const exampleThunkToFetchData = () => (dispatch, getState) => {
+  fetch('http://www.placewithdata.com')
+    .then(response => {
+      dispatch({
+        type: 'SAVE',
+        payload: response
+      });
+    })
+}
+```
+Or, using an action creator:
+
+```javascript
+const save = data => ({
+  type: 'SAVE',
+  payload: data
+})
+
+const exampleThunkToFetchData = () => (dispatch, getState) => {
+  fetch('http://www.placewithdata.com')
+    .then(response => {
+      dispatch(save(response));
+    })
+}
+```
+
+Why is our thunk returning a function that take dispatch and getState instead of taking them directly like 'getWords' did? That's because the first time this function is called is when it is called by dispatch somewhere in our program. At that point the inner function that takes dispatch and getState travels down the middleware chain until our thunk middleware passes in those arguments while calling it again. This means the first time it's called it can take other arguments from the program (like user input, a url etc.) Like so:
+
+```javascript
+const thunkMiddleware = ({ dispatch, getState }) => next => action => {
+  if(typeof action === 'function'){
+    return action(dispatch, getState);
+  }
+  next(action);
+}
+
+const reducer = (state = {}, action) => state;
+
+// Action Creator
+const saveData = data => ({
+  type: 'SAVE',
+  payload: data
+})
+
+// Thunk
+const getData = url => (dispatch, getState) => {
+  fetch(url)
+    .then(response => {
+      dispatch(saveData(response));
+    })
+}
+
+const store = createStore(reducer, applyMiddleware(thunkMiddleware))
+
+// This represents our main program.
+const main = () => {
+  // Do Stuff Here (like a React component)
+  const url = Math.random() > .5 ? 'http://www.cutekittens.com' : 'http://www.evilgremlins.com';
+  store.dispatch(getData(url))
+}
+```
+
+And that's how thunks work. Like I mentioned, redux-thunk does provide for the ability to take an extra argument (something that you might want your thunk to have access to that wouldn't be available otherwise), but we won't explore this since it should be pretty clear by now after all the practice currying we've done.
+
+### Appendix 1.4: The power of dispatch
+
+We've already talked about how applyMiddleware creates a chain that actions flow through on their way to a reducer. While we didn't cover how applyMiddleware works in detail, there is an important part of how it affects middleware is worth mentioning. In your middleware, if you call next(action), the action will be passed down the chain (and in one case next is the original dispatch function itself), but if you call dispatch(action) in a middleware, the action will be passed back to the start of the chain and begin the journey to the reducer all over again. This is immensely useful! It means we no longer have to care about sequence as much. One middleware can pass an action to another whether or not it's already been passed on the chain. A middleware can even pass an action to itself again. In fact, that last piece is very important for redux-thunk. It means that thunks can call thunks. If you dispatch a thunk from a thunk, the new thunk will hit the thunkMiddleware again. If you dispatch an action, it will be ignored by thunkMiddleware and finally make it's way to the reducer to update the state. This helps up break up a thunk into smaller pieces of logic (which is good for reuse and for testing, and for just being able to understand later).
+
+### Appendix 1.5: What to do with thunks
+
+I just want to provide a little food for thought here. There are plenty of tutorials exploring the power of thunks, but I at least wanted to start the ball rolling. The power (and peril) of thunks is that they give us our own private garden in which to run all kinds of code that does all kinds of things before finally updating the state. In most React apps that means almost all the business logic can go in thunks and the components can concern themselves with just worrying about rendering and handling events. Once you start handling your async logic in action creators, your React components will feel massively cleaner!
 
 
 
+///////// IN PROGRESS NOTES
 
-
-
-
-
-
-
-
-/////////NOTES
-
---use strict and global at the very end
--Talk about separation for testing.
 -Talk about how reducers are actually not separate.
 -We can make the second phase about how it works with react (Provider/connect)
--0our dispatch doesn't return the action
---remove intiialstate and explain why
